@@ -1,0 +1,9 @@
+{
+	"name": "web",
+    "http-server-port": 5000,
+    "site-root": "public/",
+    "enable-hsts": true,
+    "redirect-to-https": true,
+    "http-url-root": "http://ftrf.example.com",
+    "https-url-root": "https://ftrf.example.com"
+}
