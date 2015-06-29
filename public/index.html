@@ -46,20 +46,26 @@
             Heading
             <small>Subheading</small>
         </h2>
+        <fieldset>
+            <legend>Select an image</legend>
+            <input type="file" accept="image/*" id="file_input" />
+        </fieldset>
         <div class="two columns">
             <div class="left column">
                 <h3>
                     Heading
                 </h3>
-                <fieldset>
-                    <legend>Select an image</legend>
-                    <input type="file" accept="image/*" id="file_input" />
-                </fieldset>
+                <p>
+                    <img id="source-image" src="/resources/image/icon-256x256.png" />
+                </p>
             </div>
             <div class="right column">
                 <h3>
                     Heading
                 </h3>
+                <p>
+                    <img id="resulting-image" src="/resources/image/icon-256x256.png" />
+                </p>
             </div>
         </div>
     </section>
