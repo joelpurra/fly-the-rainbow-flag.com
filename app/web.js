@@ -46,6 +46,7 @@ var configuration = require("configvention"),
     },
     logger = require("bunyan").createLogger(bunyanConfig),
     uuid = require("node-uuid"),
+    onetime = require("onetime"),
 
     httpServerPort = configuration.get("PORT") || configuration.get("http-server-port"),
     httpServerIp = configuration.get("http-server-ip"),
@@ -252,6 +253,49 @@ function getS3BitlineUrl(beforeKey, afterKey, clientFilename) {
     });
 }
 
+function waitAggressivelyForS3Object(key, callback) {
+    var s3 = new aws.S3(),
+        s3_params = {
+            Bucket: S3_BUCKET,
+            Key: key,
+        },
+        onetimeCallback = onetime(function() {
+            var endTime = new Date().valueOf(),
+                deltaTime = endTime - startTime;
+
+            logger.trace("Agressively waiting", "end", key, deltaTime, "ms");
+
+            callback.apply(null, arguments);
+        }),
+        startTime = new Date().valueOf();
+
+    logger.trace("Agressively waiting", "start", key);
+
+    // Agressive waiting!
+    // https://stackoverflow.com/questions/29255582/how-to-configure-interval-and-max-attempts-in-aws-s3-javascript-sdk?rq=1
+    s3.waitFor("objectExists", s3_params, onetimeCallback);
+
+    setTimeout(function() {
+        s3.waitFor("objectExists", s3_params, onetimeCallback);
+    }, 1000);
+
+    setTimeout(function() {
+        s3.waitFor("objectExists", s3_params, onetimeCallback);
+    }, 2000);
+
+    setTimeout(function() {
+        s3.waitFor("objectExists", s3_params, onetimeCallback);
+    }, 3000);
+
+    setTimeout(function() {
+        s3.waitFor("objectExists", s3_params, onetimeCallback);
+    }, 4000);
+
+    setTimeout(function() {
+        s3.waitFor("objectExists", s3_params, onetimeCallback);
+    }, 5000);
+}
+
 function waitForClientS3Upload(beforeKey, afterKey, clientFilename) {
     if (!startsWith(beforeKey, "before/")) {
         throw new Error("beforeKey must start with before/.");
@@ -263,24 +307,23 @@ function waitForClientS3Upload(beforeKey, afterKey, clientFilename) {
 
     logger.trace("Waiting for file upload", beforeKey, afterKey, clientFilename);
 
-    var s3 = new aws.S3(),
-        s3_params = {
-            Bucket: S3_BUCKET,
-            Key: afterKey,
-        },
-        objectExistsCallback = function(err, metadata) {
-            if (err && err.code === "Not Found") {
-                // TODO: What, it doesn"t exist? Hmm. Check metadata?
-                logger.error("Object didn't exist", beforeKey, afterKey, err, metadata)
-            } else {
-                logger.trace("Object exists", beforeKey, afterKey, metadata);
+    var objectExistsCallback = function(err, metadata) {
+        if (err && err.code === "Not Found") {
+            // TODO: What, it doesn"t exist? Hmm. Check metadata?
+            logger.error("Object didn't exist", beforeKey, afterKey, err, metadata);
+        } else if (err) {
+            logger.error("Unknown error", beforeKey, afterKey, err, metadata);
+        } else {
+            logger.trace("Object exists", beforeKey, afterKey, metadata);
 
-                getS3BitlineUrl(beforeKey, afterKey, clientFilename);
-            }
-        };
+            getS3BitlineUrl(beforeKey, afterKey, clientFilename);
+        }
+    };
 
-    // TODO: Give the client browser a second to receive this reply and upload the file to S3 before initial check?
-    s3.waitFor("objectExists", s3_params, objectExistsCallback);
+    // Give the client browser a second to receive this reply and upload the file to S3 before initial check.
+    setTimeout(function() {
+        waitAggressivelyForS3Object(beforeKey, objectExistsCallback);
+    }, 1000);
 }
 
 function getExtensionFromInternetMediaType(internetMediaType) {

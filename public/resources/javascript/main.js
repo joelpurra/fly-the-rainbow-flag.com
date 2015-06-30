@@ -1,28 +1,72 @@
 (function() {
-    // https://coderwall.com/p/hy_qjw/poll-s3-for-image-using-jquery?p=1&q=
-    function waitForImage(img_id, src, callback) {
-        var imageSelector = "#" + img_id;
-        var tries = 10;
+    // From http://www.html5rocks.com/en/tutorials/cors/
+    // By Monsur Hossain
+    // Apache 2.0 License
+    function createCORSRequest(method, url) {
+        var xhr = new XMLHttpRequest();
+        if ("withCredentials" in xhr) {
+            // Check if the XMLHttpRequest object has a "withCredentials" property.
+            // "withCredentials" only exists on XMLHTTPRequest2 objects.
+            xhr.open(method, url, true);
 
-        $("body").find(imageSelector).remove();
+        } else if (typeof XDomainRequest != "undefined") {
+            // Otherwise, check if XDomainRequest.
+            // XDomainRequest only exists in IE, and is IE"s way of making CORS requests.
+            xhr = new XDomainRequest();
+            xhr.open(method, url);
+        } else {
+            // Otherwise, CORS is not supported by the browser.
+            xhr = null;
+        }
 
-        setTimeout(function() {
-            $("body").append("<img style='display:none;' id='" + img_id + "'/>");
-            var $img = $(imageSelector);
-            $img.error(function() {
-                setTimeout(function() {
-                    tries -= 1;
-                    if (tries < 1) {
-                        callback(false);
-                    }
-                    waitForImage(img_id, src, callback);
-                }, 5000);
-            });
-            $img.load(function() {
-                callback(true, src);
-            });
-            $img.attr("src", src + "?" + Math.random().toString());
-        }, 1000);
+        return xhr;
+    }
+
+    function waitForAfterImage(afterUrl) {
+        // Expecting a Access-Control-Allow-Origin error here, as there it no such header until the file exists.
+        var xhr = createCORSRequest("GET", afterUrl);
+
+        if (!xhr) {
+            throw new Error("CORS not supported");
+        }
+
+        xhr.addEventListener("load", function(evt) {
+            if (xhr.status === 200) {
+                setImage();
+            } else {
+                retryCheckAndWait();
+            }
+        });
+
+        xhr.addEventListener("error", function(evt) {
+            console.error("Could not check for after image", "onerror", evt);
+
+            retryCheckAndWait();
+        }, false);
+
+        xhr.addEventListener("abort", function(evt) {
+            console.error("Could not check for after image", "onabort", e);
+
+            retryCheckAndWait();
+        }, false);
+
+        xhr.addEventListener("timeout", function(evt) {
+            console.error("Could not check for after image", "ontimeout", evt);
+
+            retryCheckAndWait();
+        }, false);
+
+        xhr.send();
+
+        function setImage() {
+            document.getElementById("resulting-image").src = afterUrl;
+        }
+
+        function retryCheckAndWait() {
+            setTimeout(function() {
+                waitForAfterImage(afterUrl);
+            }, 500);
+        }
     }
 
     // Based on https://github.com/flyingsparx/NodeDirectUploader
@@ -43,10 +87,7 @@
             if (xhr.status === 200) {
                 document.getElementById("source-image").src = beforeUrl;
 
-                setTimeout(function() {
-                    // TODO: properly poll and check that the image exists?
-                    document.getElementById("resulting-image").src = afterUrl;
-                }, 5000);
+                waitForAfterImage(afterUrl);
             }
         };
         xhr.onerror = function() {
