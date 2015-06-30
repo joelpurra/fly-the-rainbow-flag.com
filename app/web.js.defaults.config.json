@@ -1,9 +1,12 @@
 {
-	"name": "web",
+    "name": "web",
     "http-server-port": 5000,
     "site-root": "public/",
     "enable-hsts": false,
     "redirect-to-https": false,
     "http-url-root": "http://ftrf.example.com",
-    "https-url-root": "https://ftrf.example.com"
+    "https-url-root": "https://ftrf.example.com",
+    "logging": {
+        "level": "warn"
+    }
 }

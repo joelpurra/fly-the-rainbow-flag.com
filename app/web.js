@@ -27,20 +27,20 @@ var configuration = require("configvention"),
             //
             {
                 type: "stream",
-                level: "trace",
+                level: configuration.get("logging:level") || "trace",
                 stream: process.stdout
             },
             //
-            {
-                type: "rotating-file",
-                // TODO: use path from configuration so that there's one log path per app.
-                path: "ftrf-web.log",
-                // Daily rotation.
-                period: "1d",
-                // Keep three files.
-                count: 3,
-                level: "trace",
-            },
+            // {
+            //     type: "rotating-file",
+            //     // TODO: use path from configuration so that there's one log path per app.
+            //     path: "ftrf-web.log",
+            //     // Daily rotation.
+            //     period: "1d",
+            //     // Keep three files.
+            //     count: 3,
+            //     level: "trace",
+            // },
             //
         ],
     },
