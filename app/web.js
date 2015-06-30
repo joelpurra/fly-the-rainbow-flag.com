@@ -165,7 +165,7 @@ function blitlineCreateAddOverlayJob(beforeKey, afterKey, signedAfterUrl, client
 
                 // "name": "composite",
                 // "params": {
-                //     "src": "https://ftrf.example.com/resources/image/overlay/rainbow-flag-superwide.svg",
+                //     "src": "https://fly-the-rainbow-flag.com/resources/image/overlay/rainbow-flag-superwide.svg",
                 //     "gravity": "CenterGravity",
                 //     "scale_to_fit": {
                 //         "height": "100%"

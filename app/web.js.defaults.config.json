@@ -4,8 +4,8 @@
     "site-root": "public/",
     "enable-hsts": false,
     "redirect-to-https": false,
-    "http-url-root": "http://ftrf.example.com",
-    "https-url-root": "https://ftrf.example.com",
+    "http-url-root": "http://fly-the-rainbow-flag.com",
+    "https-url-root": "https://fly-the-rainbow-flag.com",
     "logging": {
         "level": "warn"
     }

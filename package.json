@@ -5,7 +5,7 @@
     },
     "version": "0.0.0",
     "description": "ftrf-tastic!",
-    "homepage": "https://ftrf.example.com/",
+    "homepage": "https://fly-the-rainbow-flag.com/",
     "main": "app/web.js",
     "dependencies": {
         "aws-sdk": "^2.1.36",

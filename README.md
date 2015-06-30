@@ -1,4 +1,4 @@
-# [ftrf.example.com](https://ftrf.example.com/) [web](https://github.com/ftrf/web)
+# [fly-the-rainbow-flag.com](https://fly-the-rainbow-flag.com/) [web](https://github.com/ftrf/web)
 
 Fly the rainbow flag!
 
