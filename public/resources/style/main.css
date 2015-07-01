@@ -37,21 +37,21 @@ strong {
     font-family: 'Bangers', 'Open Sans', Helvetica, Verdana, sans-serif;
 }
 
-em {
-    font-family: 'Cookie', cursive;
-    padding-right: 0.1em;
-}
-
 header {
     font-size: 1.5em;
-    background-color: #eaeaea;
+    color: #ffffff;
+    text-shadow: 1px 1px 10px #000000;
+    background-color: #6082AC;
+    background-repeat: no-repeat;
+    background-image: url("/resources/image/background/1024px-Rainbow_flag_and_blue_skies.jpg");
+    background-size: cover;
     padding-bottom: 1em;
     margin-bottom: 1em;
 }
 
 header,
 header a {
-    color: #504c52;
+    color: #ffffff;
     text-decoration: none;
 }
 
@@ -145,4 +145,8 @@ abbr {
 
 .clear {
     clear: both;
+}
+
+.results img {
+    max-width: 99%;
 }
