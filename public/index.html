@@ -48,21 +48,24 @@
             <small>Select your file below</small>
         </h2>
         <input type="file" accept="image/*" id="file_input" />
-        <div class="two columns results">
-            <div class="left column">
+        <div id="log"></div>
+        <div id="results" class="two columns">
+            <div id="before" class="left column">
                 <h3>
                     Before
+                    <span class="processing-spinner"></span>
                 </h3>
                 <p>
-                    <img id="source-image" src="/resources/image/placeholder/before.jpg" />
+                    <img id="before-image" src="/resources/image/placeholder/before.jpg" />
                 </p>
             </div>
-            <div class="right column">
+            <div id="after" class="right column">
                 <h3>
                     After
+                    <span class="processing-spinner"></span>
                 </h3>
                 <p>
-                    <img id="resulting-image" src="/resources/image/placeholder/after.jpg" />
+                    <img id="after-image" src="/resources/image/placeholder/after.jpg" />
                 </p>
             </div>
             <p>

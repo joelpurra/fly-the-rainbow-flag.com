@@ -27,7 +27,9 @@
         var xhr = createCORSRequest("GET", afterUrl);
 
         if (!xhr) {
-            throw new Error("CORS not supported");
+            showError("This browser doesn't support checking for the rainbowified image =(");
+
+            return;
         }
 
         xhr.addEventListener("load", function(evt) {
@@ -38,28 +40,24 @@
             }
         });
 
-        xhr.addEventListener("error", function(evt) {
-            console.error("Could not check for after image", "onerror", evt);
+        xhr.addEventListener("error", logAndRetry, false);
 
-            retryCheckAndWait();
-        }, false);
+        xhr.addEventListener("abort", logAndRetry, false);
 
-        xhr.addEventListener("abort", function(evt) {
-            console.error("Could not check for after image", "onabort", e);
-
-            retryCheckAndWait();
-        }, false);
-
-        xhr.addEventListener("timeout", function(evt) {
-            console.error("Could not check for after image", "ontimeout", evt);
-
-            retryCheckAndWait();
-        }, false);
+        xhr.addEventListener("timeout", logAndRetry, false);
 
         xhr.send();
 
+        function logAndRetry(evt) {
+            console.error("Could not check for after image", evt);
+            showError("There was a problem checking for the rainbowified image =(");
+
+            retryCheckAndWait();
+        }
+
         function setImage() {
-            document.getElementById("resulting-image").src = afterUrl;
+            document.getElementById("after-image").src = afterUrl;
+            document.getElementById("after").className = document.getElementById("after").className.replace(/is-processing/g, "");
         }
 
         function retryCheckAndWait() {
@@ -85,14 +83,19 @@
         // xhr.setRequestHeader("x-amz-meta-name", filename);
         xhr.onload = function() {
             if (xhr.status === 200) {
-                document.getElementById("source-image").src = beforeUrl;
+                document.getElementById("before-image").src = beforeUrl;
+                document.getElementById("before").className = document.getElementById("before").className.replace(/is-processing/g, "");
 
                 waitForAfterImage(afterUrl);
             }
         };
-        xhr.onerror = function() {
-            alert("Could not upload file.");
+
+        xhr.onerror = function(evt) {
+            console.error("upload_file", xhr, evt);
+
+            showError("Could not upload file =(");
         };
+
         xhr.send(file);
     }
 
@@ -111,7 +114,8 @@
                     var response = JSON.parse(xhr.responseText);
                     upload_file(file, response.signed_request, response.beforeUrl, response.afterUrl, fileName);
                 } else {
-                    alert("Could not get signed URL. (Status " + xhr.status + ")");
+                    console.error("get_signed_request", xhr);
+                    showError("Could not get signed URL =(");
                 }
             }
         };
@@ -125,10 +129,14 @@
     function init_upload() {
         var files = document.getElementById("file_input").files;
         var file = files[0];
+
         if (file == null) {
-            alert("No file selected.");
             return;
         }
+
+        document.getElementById("after").className += " is-processing";
+        document.getElementById("before").className += " is-processing";
+
         get_signed_request(file);
     }
 
@@ -138,4 +146,8 @@
     (function() {
         document.getElementById("file_input").onchange = init_upload;
     })();
+
+    function showError(msg) {
+        document.getElementById("log").innerHTML += "<p>" + msg + "</p>";
+    }
 })();

@@ -147,6 +147,21 @@ abbr {
     clear: both;
 }
 
-.results img {
+#results img {
     max-width: 99%;
+}
+
+#results .is-processing .processing-spinner::before {
+    content: url("/resources/image/spinner/spinner-16x16.gif");
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+}
+
+#log p {
+    font-size: 0.5em;
+    border: 1px solid #cc9999;
+    background-color: #ffcccc;
+    padding: 0.3em;
+    border-radius: 5px;
 }
