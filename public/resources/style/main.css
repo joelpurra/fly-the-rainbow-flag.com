@@ -90,8 +90,11 @@ fieldset input,
 fieldset button {
     font-size: 1em;
 }
+/*fieldset input[type=file]*/
 
-fieldset input[type=file] {
+input[type=file] {
+    border: 5px solid lightgreen;
+    padding: 0.5em;
     font-size: 0.5em;
 }
 
@@ -209,6 +212,7 @@ abbr {
 .social-container {
     width: 300px;
     /*padding: 100px;*/
+    
     margin: auto;
 }
 
