@@ -95,6 +95,8 @@ var configuration = require("configvention"),
     aws = require("aws-sdk"),
     Blitline = require("simple_blitline_node"),
 
+    socialButtonsServer = require("../lib/social-buttons-server-middleware.js"),
+
     app = express();
 
 app.use(expressLogger);
@@ -252,12 +254,13 @@ function waitAggressivelyForS3Object(key, callback) {
             Key: key,
         },
         onetimeCallback = onetime(function() {
-            var endTime = new Date().valueOf(),
+            var args = [].slice.call(arguments),
+                endTime = new Date().valueOf(),
                 deltaTime = endTime - startTime;
 
             logger.trace("Agressively waiting", "end", key, deltaTime, "ms");
 
-            callback.apply(null, arguments);
+            callback.apply(null, args);
         }),
         startTime = new Date().valueOf();
 
@@ -391,6 +394,8 @@ function getExtensionFromInternetMediaType(internetMediaType) {
         });
     });
 }());
+
+socialButtonsServer("/social-buttons-server/", app);
 
 app.use(mount);
 
