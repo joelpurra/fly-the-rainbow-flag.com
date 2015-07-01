@@ -159,20 +159,14 @@ function blitlineCreateAddOverlayJob(beforeKey, afterKey, signedAfterUrl, client
             "application_id": BLITLINE_APP_ID,
             "src": getS3UrlFromKey(beforeKey),
             "functions": [{
-                // TODO DEBUG REMOVE
-                "name": "gray_colorspace",
-                "params": {},
-
-                // "name": "composite",
-                // "params": {
-                //     "src": "https://fly-the-rainbow-flag.com/resources/image/overlay/rainbow-flag-superwide.svg",
-                //     "gravity": "CenterGravity",
-                //     "scale_to_fit": {
-                //         "height": "100%"
-                //     },
-                //     "src_percentage": 0.5,
-                //     "dst_percentage": 0.5
-                // },
+                "name": "dissolve",
+                "params": {
+                    "src": "https://fly-the-rainbow-flag.com/resources/image/overlay/rainbow-flag-superwide.svg",
+                    "gravity": "CenterGravity",
+                    "scale_to_match": true,
+                    "src_percentage": 0.3,
+                    "dst_percentage": 0.7
+                },
                 "save": {
                     "image_identifier": afterKey,
                     "s3_destination": {
