@@ -167,17 +167,25 @@ function blitlineCreateAddOverlayJob(beforeKey, afterKey, signedAfterUrl, client
                     "src_percentage": 0.3,
                     "dst_percentage": 0.7
                 },
-                "save": {
-                    "image_identifier": afterKey,
-                    "s3_destination": {
-                        "signed_url": signedAfterUrl,
-                        "headers": {
-                            "x-amz-acl": "public-read"
-                                // TODO: save original client file name.
-                                //     "x-amz-meta-name": clientFilename
+
+                functions: [{
+                    "name": "modulate",
+                    "params": {
+                        "saturation": 1.25
+                    },
+
+                    "save": {
+                        "image_identifier": afterKey,
+                        "s3_destination": {
+                            "signed_url": signedAfterUrl,
+                            "headers": {
+                                "x-amz-acl": "public-read"
+                                    // TODO: save original client file name.
+                                    //     "x-amz-meta-name": clientFilename
+                            }
                         }
                     }
-                }
+                }]
             }]
         };
 
@@ -186,17 +194,7 @@ function blitlineCreateAddOverlayJob(beforeKey, afterKey, signedAfterUrl, client
     blitline.postJobs(function(response) {
         logger.trace("Received add overlay job response", beforeKey, afterKey, signedAfterUrl, clientFilename, response);
 
-        //http://www.blitline.com/docs/postback#json
-        //
-        // {
-        //     "results": {
-        //         "images": [{
-        //             "image_identifier": "MY_CLIENT_ID",
-        //             "s3_url": "https://dev.blitline.s3.amazonaws.com/2011111513/1/fDIFJQVNlO6IeDZwXlruYg.jpg"
-        //         }],
-        //         "job_id": "4ec2e057c29aba53a5000001"
-        //     }
-        // }
+        // http://www.blitline.com/docs/postback#json
         try {
             if (response.results.failed_image_identifiers) {
                 // TODO: handle error.
