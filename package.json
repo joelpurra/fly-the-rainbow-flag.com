@@ -1,57 +1,58 @@
 {
-    "name": "ftrf-web",
-    "publishConfig": {
-        "registry": "http://localhost:4873/"
-    },
-    "version": "0.0.0",
-    "description": "ftrf-tastic!",
-    "homepage": "https://fly-the-rainbow-flag.com/",
-    "main": "app/web.js",
-    "dependencies": {
-        "aws-sdk": "^2.1.36",
-        "bluebird": "^2.9.30",
-        "bunyan": "^1.4.0",
-        "configvention": "^1.0.2",
-        "express": "^4.12.4",
-        "helmet": "^0.6.0",
-        "lodash": "^3.10.0",
-        "morgan": "^1.5.3",
-        "node-uuid": "^1.4.3",
-        "onetime": "^1.0.0",
-        "request": "^2.58.0",
-        "simple_blitline_node": "^2.2.0",
-        "st": "^0.4.1"
-    },
-    "devDependencies": {
-        "eslint": "^0.23.0",
-        "jscs": "^1.13.1",
-        "pre-commit": "^1.0.10"
-    },
-    "scripts": {
-        "test": "npm run lint && echo && echo 'No tests have been added!'",
-        "lint": "npm run eslint && npm run jscs",
-        "jscs": "node node_modules/jscs/bin/jscs app/web.js",
-        "eslint": "node node_modules/eslint/bin/eslint.js app/web.js"
-    },
-    "engines": {
-        "node": "^0.12.2",
-        "npm": "^2.7.5"
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/ftrf/web"
-    },
-    "bugs": {
-        "url": "https://github.com/ftrf/web/issues",
-        "email": "code+ftrf@joelpurra.com"
-    },
-    "keywords": [
-        "ftrf"
-    ],
-    "author": {
-        "name": "Joel Purra",
-        "email": "code+npm@joelpurra.com",
-        "url": "http://joelpurra.com/"
-    },
-    "license": "AGPL-3.0"
+  "name": "ftrf-web",
+  "publishConfig": {
+    "registry": "http://localhost:4873/"
+  },
+  "version": "0.0.0",
+  "description": "ftrf-tastic!",
+  "homepage": "https://fly-the-rainbow-flag.com/",
+  "main": "app/web.js",
+  "dependencies": {
+    "aws-sdk": "^2.1.36",
+    "bluebird": "^2.9.30",
+    "bunyan": "^1.4.0",
+    "configvention": "^1.0.2",
+    "express": "^4.12.4",
+    "helmet": "^0.6.0",
+    "lodash": "^3.10.0",
+    "memory-cache": "^0.1.4",
+    "morgan": "^1.5.3",
+    "node-uuid": "^1.4.3",
+    "onetime": "^1.0.0",
+    "request": "^2.58.0",
+    "simple_blitline_node": "^2.2.0",
+    "st": "^0.4.1"
+  },
+  "devDependencies": {
+    "eslint": "^0.23.0",
+    "jscs": "^1.13.1",
+    "pre-commit": "^1.0.10"
+  },
+  "scripts": {
+    "test": "npm run lint && echo && echo 'No tests have been added!'",
+    "lint": "npm run eslint && npm run jscs",
+    "jscs": "node node_modules/jscs/bin/jscs app/web.js",
+    "eslint": "node node_modules/eslint/bin/eslint.js app/web.js"
+  },
+  "engines": {
+    "node": "^0.12.2",
+    "npm": "^2.7.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ftrf/web"
+  },
+  "bugs": {
+    "url": "https://github.com/ftrf/web/issues",
+    "email": "code+ftrf@joelpurra.com"
+  },
+  "keywords": [
+    "ftrf"
+  ],
+  "author": {
+    "name": "Joel Purra",
+    "email": "code+npm@joelpurra.com",
+    "url": "http://joelpurra.com/"
+  },
+  "license": "AGPL-3.0"
 }
