@@ -110,6 +110,12 @@ app.use(helmet.hsts({
 
 app.use(configuredHttpsRedirect());
 
+
+
+app.use("/social-buttons-server/", socialButtonsServer());
+
+
+
 aws.config.update({
     accessKeyId: AWS_ACCESS_KEY,
     secretAccessKey: AWS_SECRET_KEY
@@ -395,7 +401,7 @@ function getExtensionFromInternetMediaType(internetMediaType) {
     });
 }());
 
-socialButtonsServer("/social-buttons-server/", app);
+
 
 app.use(mount);
 
