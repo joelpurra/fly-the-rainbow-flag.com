@@ -13,6 +13,7 @@
         "bunyan": "^1.4.0",
         "configvention": "^1.0.2",
         "express": "^4.12.4",
+        "extend": "^3.0.0",
         "helmet": "^0.6.0",
         "lodash": "^3.10.0",
         "memory-cache": "^0.1.4",
