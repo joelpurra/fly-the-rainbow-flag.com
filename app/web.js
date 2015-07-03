@@ -44,7 +44,8 @@ var configuration = require("configvention"),
             //
         ],
     },
-    logger = require("bunyan").createLogger(bunyanConfig),
+    bunyan = require("bunyan"),
+    logger = bunyan.createLogger(bunyanConfig),
     uuid = require("node-uuid"),
     onetime = require("onetime"),
 
@@ -95,8 +96,29 @@ var configuration = require("configvention"),
     aws = require("aws-sdk"),
     Blitline = require("simple_blitline_node"),
 
+    getChildLogger = function(name) {
+        var childLogger = logger.child({
+            child: name,
+        });
+
+        // Sort of normalize function name with console.log.
+        childLogger.log = childLogger.trace;
+
+        return childLogger;
+    },
+
+    socialButtonsServerMiddlewareLogger = getChildLogger("SocialButtonsServerMiddleware"),
+    socialButtonsCountsLogger = getChildLogger("SocialButtonsCounts"),
+
     SocialButtonsServerMiddleware = require("../lib/social-buttons-server-middleware.js"),
-    socialButtonsServerMiddleware = new SocialButtonsServerMiddleware(),
+    socialButtonsServerMiddlewareOptions = {
+        logger: socialButtonsServerMiddlewareLogger,
+        httpCacheTime: process.env.CACHE_TIME,
+        socialButtonsCounts: {
+            logger: socialButtonsCountsLogger,
+        },
+    },
+    socialButtonsServerMiddleware = new SocialButtonsServerMiddleware(socialButtonsServerMiddlewareOptions),
 
     app = express();
 
