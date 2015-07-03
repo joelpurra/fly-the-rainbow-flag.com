@@ -184,8 +184,7 @@ function blitlineCreateAddOverlayJob(beforeKey, afterKey, signedAfterUrl, client
 
     logger.trace("Creating add overlay job", beforeKey, afterKey, signedAfterUrl, clientFilename);
 
-    var s3 = new aws.S3(),
-        blitline = new Blitline(),
+    var blitline = new Blitline(),
         job = {
             "application_id": BLITLINE_APP_ID,
             "src": getS3UrlFromKey(beforeKey),
@@ -210,9 +209,9 @@ function blitlineCreateAddOverlayJob(beforeKey, afterKey, signedAfterUrl, client
                         "s3_destination": {
                             "signed_url": signedAfterUrl,
                             "headers": {
+                                // TODO: save original client file name.
+                                //     "x-amz-meta-name": clientFilename
                                 "x-amz-acl": "public-read"
-                                    // TODO: save original client file name.
-                                    //     "x-amz-meta-name": clientFilename
                             }
                         }
                     }
@@ -258,7 +257,7 @@ function getS3BitlineUrl(beforeKey, afterKey, clientFilename) {
     logger.trace("Fetching S3 signed putObject url for Blitline", beforeKey, afterKey, clientFilename);
 
     var s3 = new aws.S3(),
-        s3_params = {
+        s3Params = {
             Bucket: S3_BUCKET,
             Key: afterKey,
             Expires: 60,
@@ -267,7 +266,7 @@ function getS3BitlineUrl(beforeKey, afterKey, clientFilename) {
             // Metadata: metadata
         };
 
-    s3.getSignedUrl("putObject", s3_params, function(err, signedAfterUrl) {
+    s3.getSignedUrl("putObject", s3Params, function(err, signedAfterUrl) {
         if (err) {
             logger.error(err);
         } else {
@@ -278,7 +277,7 @@ function getS3BitlineUrl(beforeKey, afterKey, clientFilename) {
 
 function waitAggressivelyForS3Object(key, callback) {
     var s3 = new aws.S3(),
-        s3_params = {
+        s3Params = {
             Bucket: S3_BUCKET,
             Key: key,
         },
@@ -297,26 +296,26 @@ function waitAggressivelyForS3Object(key, callback) {
 
     // Agressive waiting!
     // https://stackoverflow.com/questions/29255582/how-to-configure-interval-and-max-attempts-in-aws-s3-javascript-sdk?rq=1
-    s3.waitFor("objectExists", s3_params, onetimeCallback);
+    s3.waitFor("objectExists", s3Params, onetimeCallback);
 
     setTimeout(function() {
-        s3.waitFor("objectExists", s3_params, onetimeCallback);
+        s3.waitFor("objectExists", s3Params, onetimeCallback);
     }, 1000);
 
     setTimeout(function() {
-        s3.waitFor("objectExists", s3_params, onetimeCallback);
+        s3.waitFor("objectExists", s3Params, onetimeCallback);
     }, 2000);
 
     setTimeout(function() {
-        s3.waitFor("objectExists", s3_params, onetimeCallback);
+        s3.waitFor("objectExists", s3Params, onetimeCallback);
     }, 3000);
 
     setTimeout(function() {
-        s3.waitFor("objectExists", s3_params, onetimeCallback);
+        s3.waitFor("objectExists", s3Params, onetimeCallback);
     }, 4000);
 
     setTimeout(function() {
-        s3.waitFor("objectExists", s3_params, onetimeCallback);
+        s3.waitFor("objectExists", s3Params, onetimeCallback);
     }, 5000);
 }
 
@@ -370,22 +369,22 @@ function getExtensionFromInternetMediaType(internetMediaType) {
     // https://devcenter.heroku.com/articles/s3-upload-node
 
     /*
-     * Respond to GET requests to /sign_s3.
+     * Respond to GET requests to /sign-s3.
      * Upon request, return JSON containing the temporarily-signed S3 request and the
      * anticipated URL of the image.
      */
-    app.get("/sign_s3", function(req, res) {
+    app.get("/sign-s3", function(req, res) {
         // TODO: better verification.
         // TODO: check which types blitline can handle.
-        if (req.query.file_type !== "image/jpeg" && req.query.file_type !== "image/png") {
+        if (req.query.filetype !== "image/jpeg" && req.query.filetype !== "image/png") {
             res.status(415); // 415 Unsupported Media Type
             res.end();
             return;
         }
 
         var s3 = new aws.S3(),
-            clientFilename = (req.query.file_name || ""),
-            imageContentType = req.query.file_type,
+            clientFilename = (req.query.filename || ""),
+            imageContentType = req.query.filetype,
             extension = getExtensionFromInternetMediaType(imageContentType),
             generatedId = uuid.v4(),
             beforeKey = getBeforeKey(generatedId, extension),
@@ -396,7 +395,7 @@ function getExtensionFromInternetMediaType(internetMediaType) {
             // metadata = {
             //     name: clientFilename
             // },
-            s3_params = {
+            s3Params = {
                 Bucket: S3_BUCKET,
                 Key: beforeKey,
                 Expires: 60,
@@ -406,16 +405,16 @@ function getExtensionFromInternetMediaType(internetMediaType) {
                 // Metadata: metadata
             };
 
-        s3.getSignedUrl("putObject", s3_params, function(err, signedBeforeUrl) {
+        s3.getSignedUrl("putObject", s3Params, function(err, signedBeforeUrl) {
             if (err) {
                 logger.error(err);
             } else {
-                var return_data = {
-                    signed_request: signedBeforeUrl,
+                var result = {
+                    signedRequest: signedBeforeUrl,
                     beforeUrl: beforeUrl,
                     afterUrl: afterUrl
                 };
-                res.write(JSON.stringify(return_data));
+                res.write(JSON.stringify(result));
                 res.end();
 
                 waitForClientS3Upload(beforeKey, afterKey, clientFilename);

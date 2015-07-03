@@ -74,8 +74,8 @@
         /*
             Function to carry out the actual PUT request to S3 using the signed request from the app.
         */
-        function upload_file(file, signed_request, beforeUrl, afterUrl, filename) {
-            var xhr = createCORSRequest("PUT", signed_request);
+        function uploadFile(file, signedRequest, beforeUrl, afterUrl, filename) {
+            var xhr = createCORSRequest("PUT", signedRequest);
 
             if (!xhr) {
                 showError("This browser does not seem to support uploading photos to the server =(");
@@ -96,7 +96,7 @@
             };
 
             xhr.onerror = function(evt) {
-                console.error("upload_file", xhr, evt);
+                console.error("uploadFile", xhr, evt);
 
                 showError("Could not upload file =(");
             };
@@ -109,17 +109,17 @@
             If request successful, continue to upload the file using this signed
             request.
         */
-        function get_signed_request(file) {
+        function getSignedRequest(file) {
             var fileName = (file.name || "");
             var xhr = new XMLHttpRequest();
-            xhr.open("GET", "/sign_s3?file_name=" + file.name + "&file_type=" + file.type);
+            xhr.open("GET", "/sign-s3?filename=" + file.name + "&filetype=" + file.type);
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         var response = JSON.parse(xhr.responseText);
-                        upload_file(file, response.signed_request, response.beforeUrl, response.afterUrl, fileName);
+                        uploadFile(file, response.signedRequest, response.beforeUrl, response.afterUrl, fileName);
                     } else {
-                        console.error("get_signed_request", xhr);
+                        console.error("getSignedRequest", xhr);
                         showError("Could not get signed URL =(");
                     }
                 }
@@ -131,8 +131,8 @@
            Function called when file input updated. If there is a file selected, then
            start upload procedure by asking for a signed request from the app.
         */
-        function init_upload() {
-            var files = document.getElementById("file_input").files;
+        function initUpload() {
+            var files = document.getElementById("file-input").files;
             var file = files[0];
 
             if (file == null) {
@@ -142,14 +142,14 @@
             document.getElementById("after").className += " is-processing";
             document.getElementById("before").className += " is-processing";
 
-            get_signed_request(file);
+            getSignedRequest(file);
         }
 
         /*
            Bind listeners when the page loads.
         */
         (function() {
-            document.getElementById("file_input").onchange = init_upload;
+            document.getElementById("file-input").onchange = initUpload;
         })();
 
         function showError(msg) {
