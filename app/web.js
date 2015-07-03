@@ -95,7 +95,8 @@ var configuration = require("configvention"),
     aws = require("aws-sdk"),
     Blitline = require("simple_blitline_node"),
 
-    socialButtonsServer = require("../lib/social-buttons-server-middleware.js"),
+    SocialButtonsServerMiddleware = require("../lib/social-buttons-server-middleware.js"),
+    socialButtonsServerMiddleware = new SocialButtonsServerMiddleware(),
 
     app = express();
 
@@ -112,7 +113,7 @@ app.use(configuredHttpsRedirect());
 
 
 
-app.use("/social-buttons-server/", socialButtonsServer());
+app.use("/social-buttons-server/", socialButtonsServerMiddleware.getRouter());
 
 
 
