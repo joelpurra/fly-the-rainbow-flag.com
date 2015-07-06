@@ -168,8 +168,8 @@ abbr {
     padding: 0.3em;
     border-radius: 5px;
 }
-/* *** start Social Buttons Server code *** */
-/* https://github.com/tfrce/social-buttons-server/ */
+/* *** start Meddelare code *** */
+/* http://meddelare.com/ */
 
 .social-count {
     display: inline;
@@ -273,4 +273,4 @@ abbr {
     transition: 0.15s ease-in all;
     opacity: 1;
 }
-/* *** end Social Buttons Server code *** */
+/* *** end Meddelare code *** */

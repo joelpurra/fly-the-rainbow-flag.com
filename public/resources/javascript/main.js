@@ -158,25 +158,25 @@
     })();
 
     (function() {
-        // https://github.com/tfrce/social-buttons-server/
-        // TODO: deploy own social network buttons server.
-        function updateSocialNetworkButtons() {
+        // Self-hosted Meddelare.
+        // http://meddelare.com/
+        function updateMeddelare() {
             var primaryWebsiteUrl = "https://fly-the-rainbow-flag.com/",
                 networks = ["facebook", "twitter", "googleplus"],
-                socialButtonsProxyServer = "/social-buttons-server/?networks=" + networks.join(",") + "&url=" + primaryWebsiteUrl,
-                xhr = createCORSRequest("GET", socialButtonsProxyServer);
+                meddelareUrl = "/meddelare/?networks=" + networks.join(",") + "&url=" + primaryWebsiteUrl,
+                xhr = createCORSRequest("GET", meddelareUrl);
 
             if (!xhr) {
-                console.error("Could not update social media button counts.");
+                console.error("Could not update Meddelare social media button counts.");
 
                 clearNetworkCounts();
 
                 return;
             }
 
-            xhr.addEventListener("error", logSocialNetworkError);
-            xhr.addEventListener("abort", logSocialNetworkError);
-            xhr.addEventListener("time", logSocialNetworkError);
+            xhr.addEventListener("error", logMeddelareError);
+            xhr.addEventListener("abort", logMeddelareError);
+            xhr.addEventListener("time", logMeddelareError);
 
             xhr.addEventListener("load", function() {
                 if (xhr.status === 200) {
@@ -192,8 +192,8 @@
 
             xhr.send();
 
-            function logSocialNetworkError(evt) {
-                console.error("Could not update social media button counts.", evt);
+            function logMeddelareError(evt) {
+                console.error("Could not update Meddelare social media button counts.", evt);
 
                 clearNetworkCounts();
             }
@@ -205,6 +205,6 @@
             }
         }
 
-        document.addEventListener("DOMContentLoaded", updateSocialNetworkButtons);
+        document.addEventListener("DOMContentLoaded", updateMeddelare);
     }());
 }());

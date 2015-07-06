@@ -107,18 +107,18 @@ var configuration = require("configvention"),
         return childLogger;
     },
 
-    socialButtonsServerMiddlewareLogger = getChildLogger("SocialButtonsServerMiddleware"),
-    socialButtonsCountsLogger = getChildLogger("SocialButtonsCounts"),
+    meddelareExpressLogger = getChildLogger("MeddelareExpress"),
+    meddelareCountersLogger = getChildLogger("MeddelareCounters"),
 
-    SocialButtonsServerMiddleware = require("../lib/social-buttons-server-middleware.js"),
-    socialButtonsServerMiddlewareOptions = {
-        logger: socialButtonsServerMiddlewareLogger,
+    MeddelareExpress = require("meddelare-express"),
+    meddelareExpressOptions = {
+        mogger: meddelareExpressLogger,
         httpCacheTime: process.env.CACHE_TIME,
-        socialButtonsCounts: {
-            logger: socialButtonsCountsLogger,
+        meddelareCounters: {
+            logger: meddelareCountersLogger,
         },
     },
-    socialButtonsServerMiddleware = new SocialButtonsServerMiddleware(socialButtonsServerMiddlewareOptions),
+    meddelareExpress = new MeddelareExpress(meddelareExpressOptions),
 
     app = express();
 
@@ -135,7 +135,7 @@ app.use(configuredHttpsRedirect());
 
 
 
-app.use("/social-buttons-server/", socialButtonsServerMiddleware.getRouter());
+app.use("/meddelare/", meddelareExpress.getRouter());
 
 
 
