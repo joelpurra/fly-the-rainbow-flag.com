@@ -159,12 +159,18 @@
 
     (function() {
         // Self-hosted Meddelare.
-        // http://meddelare.com/
+        // https://meddelare.com/
         function updateMeddelare() {
-            var primaryWebsiteUrl = "https://fly-the-rainbow-flag.com/",
+            // TODO: update if using more than one container.
+            var containers = document.querySelectorAll(".meddelare-container"),
+                container = containers[0],
+                // TODO: issue only one Meddelare request per share-URL.
+                primaryWebsiteUrl = container.getAttribute("data-meddelare-url"),
+
                 networks = ["facebook", "twitter", "googleplus"],
                 meddelareUrl = "/meddelare/?networks=" + networks.join(",") + "&url=" + primaryWebsiteUrl,
-                xhr = createCORSRequest("GET", meddelareUrl);
+                xhr = createCORSRequest("GET", meddelareUrl),
+                MEDDELARE_COUNT_FALLBACK = "—";
 
             if (!xhr) {
                 console.error("Could not update Meddelare social media button counts.");
@@ -183,7 +189,14 @@
                     var response = JSON.parse(xhr.responseText);
 
                     networks.forEach(function(network) {
-                        document.getElementById(network).setAttribute("data-count", response[network] || 0);
+                        var receivedCount = parseInt(response[network], 10);
+                        var count = MEDDELARE_COUNT_FALLBACK;
+
+                        if (receivedCount >= 0) {
+                            count = receivedCount;
+                        }
+
+                        setNetworkCount(network, count);
                     });
                 } else {
                     clearNetworkCounts();
@@ -198,9 +211,23 @@
                 clearNetworkCounts();
             }
 
+            function getNetworkElements(network) {
+                var elements = document.querySelectorAll("[data-meddelare-network=" + network + "]");
+
+                return elements;
+            }
+
+            function setNetworkCount(network, count) {
+                // TODO: update if using more than one container.
+                var elements = getNetworkElements(network),
+                    element = elements[0];
+
+                element.setAttribute("data-count", count);
+            }
+
             function clearNetworkCounts() {
                 networks.forEach(function(network) {
-                    document.getElementById(network).setAttribute("data-count", "?");
+                    setNetworkCount(network, MEDDELARE_COUNT_FALLBACK);
                 });
             }
         }
