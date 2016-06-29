@@ -189,34 +189,43 @@ function blitlineCreateAddOverlayJob(beforeKey, afterKey, signedAfterUrl, client
             "application_id": BLITLINE_APP_ID,
             "src": getS3UrlFromKey(beforeKey),
             "functions": [{
-                "name": "dissolve",
+                "name": "modulate",
                 "params": {
-                    "src": "https://fly-the-rainbow-flag.com/resources/image/overlay/rainbow-flag-superwide.svg",
-                    "gravity": "CenterGravity",
-                    "scale_to_match": true,
-                    "src_percentage": 0.3,
-                    "dst_percentage": 0.7
+                    "saturation": 0.5,
                 },
 
-                functions: [{
-                    "name": "modulate",
+                "functions": [{
+                    "name": "dissolve",
                     "params": {
-                        "saturation": 1.25
+                        // This file used to be hosted locally, but Blitline seemed to not be able to load it from the main domain.
+                        // "src": "https://fly-the-rainbow-flag.com/resources/image/overlay/rainbow-flag-superwide.svg",
+                        "src": "https://fly-the-rainbow-flag.s3.eu-central-1.amazonaws.com/resources/image/overlay/rainbow-flag-superwide.svg",
+                        "gravity": "CenterGravity",
+                        "scale_to_match": true,
+                        "src_percentage": 0.3,
+                        "dst_percentage": 0.7,
                     },
 
-                    "save": {
-                        "image_identifier": afterKey,
-                        "s3_destination": {
-                            "signed_url": signedAfterUrl,
-                            "headers": {
-                                // TODO: save original client file name.
-                                //     "x-amz-meta-name": clientFilename
-                                "x-amz-acl": "public-read"
-                            }
-                        }
-                    }
-                }]
-            }]
+                    "functions": [{
+                        "name": "modulate",
+                        "params": {
+                            "saturation": 1.25,
+                        },
+
+                        "save": {
+                            "image_identifier": afterKey,
+                            "s3_destination": {
+                                "signed_url": signedAfterUrl,
+                                "headers": {
+                                    // TODO: save original client file name.
+                                    //     "x-amz-meta-name": clientFilename
+                                    "x-amz-acl": "public-read",
+                                },
+                            },
+                        },
+                    }],
+                }],
+            }],
         };
 
     blitline.addJob(job);
