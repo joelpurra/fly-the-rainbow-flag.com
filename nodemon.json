@@ -1,0 +1,8 @@
+{
+    "delay": 1,
+    "watch": [
+        "app/",
+        "lib/"
+    ],
+    "ext": "js"
+}
