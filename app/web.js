@@ -1,5 +1,3 @@
-"use strict";
-
 var configuration = require("configvention"),
 
     AWS_ACCESS_KEY = configuration.get("AWS_ACCESS_KEY"),
@@ -28,7 +26,7 @@ var configuration = require("configvention"),
             {
                 type: "stream",
                 level: configuration.get("logging:level") || "trace",
-                stream: process.stdout
+                stream: process.stdout,
             },
             //
             // {
@@ -60,7 +58,7 @@ var configuration = require("configvention"),
     expressLogger = morgan("combined", {
         skip: function(req, res) {
             return res.statusCode < 400;
-        }
+        },
     }),
     helmet = require("helmet"),
     st = require("st"),
@@ -90,7 +88,7 @@ var configuration = require("configvention"),
     mount = st({
         path: siteRootPath,
         url: "/",
-        index: "index.html"
+        index: "index.html",
     }),
 
     aws = require("aws-sdk"),
@@ -128,26 +126,21 @@ app.use(helmet());
 app.use(helmet.hsts({
     maxAge: 15724800000,
     includeSubdomains: true,
-    force: configuration.get("enable-hsts") === true
+    force: configuration.get("enable-hsts") === true,
 }));
 
 app.use(configuredHttpsRedirect());
 
-
-
 app.use("/meddelare/", meddelareExpress.getRouter());
-
-
 
 aws.config.update({
     accessKeyId: AWS_ACCESS_KEY,
-    secretAccessKey: AWS_SECRET_KEY
+    secretAccessKey: AWS_SECRET_KEY,
 });
 aws.config.update({
     region: AWS_REGION,
-    signatureVersion: "v4"
+    signatureVersion: "v4",
 });
-
 
 function shortDateString(date) {
     date = date || new Date();
@@ -422,7 +415,7 @@ function getExtensionFromInternetMediaType(internetMediaType) {
                 var result = {
                     signedRequest: signedBeforeUrl,
                     beforeUrl: beforeUrl,
-                    afterUrl: afterUrl
+                    afterUrl: afterUrl,
                 };
                 res.write(JSON.stringify(result));
                 res.end();
@@ -432,8 +425,6 @@ function getExtensionFromInternetMediaType(internetMediaType) {
         });
     });
 }());
-
-
 
 app.use(mount);
 
