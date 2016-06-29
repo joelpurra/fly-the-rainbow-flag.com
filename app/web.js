@@ -221,28 +221,29 @@ function blitlineCreateAddOverlayJob(beforeKey, afterKey, signedAfterUrl, client
 
     blitline.addJob(job);
 
-    blitline.postJobs(function(response) {
-        logger.trace("Received add overlay job response", beforeKey, afterKey, signedAfterUrl, clientFilename, response);
+    blitline.postJobs()
+        .then(function(response) {
+            logger.trace("Received add overlay job response", beforeKey, afterKey, signedAfterUrl, clientFilename, response);
 
-        // http://www.blitline.com/docs/postback#json
-        try {
-            if (response.results.failed_image_identifiers) {
-                // TODO: handle error.
-                logger.error("Blitline", "Failed image identifiers", beforeKey, afterKey, signedAfterUrl, clientFilename, response, response.results.failed_image_identifiers);
-            } else {
-                // TODO: let the client know?
-                logger.trace("Blitline", "Success", beforeKey, afterKey, signedAfterUrl, clientFilename, response, response.results, response.results.map(function(result) {
-                    return result.images;
-                }), response.results.map(function(result) {
-                    return result.images.map(function(image) {
-                        return "'" + image.image_identifier + "' '" + image.s3_url + "'";
-                    });
-                }));
+            // http://www.blitline.com/docs/postback#json
+            try {
+                if (response.results.failed_image_identifiers) {
+                    // TODO: handle error.
+                    logger.error("Blitline", "Failed image identifiers", beforeKey, afterKey, signedAfterUrl, clientFilename, response, response.results.failed_image_identifiers);
+                } else {
+                    // TODO: let the client know?
+                    logger.trace("Blitline", "Success", beforeKey, afterKey, signedAfterUrl, clientFilename, response, response.results, response.results.map(function(result) {
+                        return result.images;
+                    }), response.results.map(function(result) {
+                        return result.images.map(function(image) {
+                            return "'" + image.image_identifier + "' '" + image.s3_url + "'";
+                        });
+                    }));
+                }
+            } catch (e) {
+                logger.error("Blitline", "Catch", beforeKey, afterKey, clientFilename, response, e);
             }
-        } catch (e) {
-            logger.error("Blitline", "Catch", beforeKey, afterKey, clientFilename, response, e);
-        }
-    });
+        });
 }
 
 function getS3BitlineUrl(beforeKey, afterKey, clientFilename) {
