@@ -181,6 +181,7 @@ function blitlineCreateAddOverlayJob(beforeKey, afterKey, signedAfterUrl, client
         job = {
             "application_id": BLITLINE_APP_ID,
             "src": getS3UrlFromKey(beforeKey),
+            "wait_retry_delay": 5,
             "functions": [{
                 "name": "modulate",
                 "params": {
@@ -285,42 +286,67 @@ function waitAggressivelyForS3Object(key, callback) {
             Bucket: S3_BUCKET,
             Key: key,
         },
-        onetimeCallback = onetime(function() {
-            var args = [].slice.call(arguments),
-                endTime = new Date().valueOf(),
+        // TODO: chain timed checks instead of starting all at once.
+        timedChecks = [1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110],
+        timeouts = [],
+        addTimeout = function(fn, timeout) {
+            var timeoutId = setTimeout(fn, timeout);
+
+            timeouts.push(timeoutId);
+        },
+        clearTimeouts = function() {
+            timeouts.forEach(function(timeoutId) {
+                clearTimeout(timeoutId);
+            });
+        },
+        onetimeCallback = onetime(function(err, metadata) {
+            var endTime = new Date().valueOf(),
                 deltaTime = endTime - startTime;
+
+            // TODO: chain timed checks instead of starting all at once.
+            clearTimeouts();
 
             logger.trace("Agressively waiting", "end", key, deltaTime, "ms");
 
-            callback.apply(null, args);
+            callback(err, metadata);
         }),
-        startTime = new Date().valueOf();
+        startTime = new Date().valueOf(),
+        filterOutExpectedErrorsCallback = function(err, metadata) {
+            // TODO: chain timed checks instead of starting all at once.
+            var endTime = new Date().valueOf(),
+                deltaTime = endTime - startTime;
+
+            if (err && err.code === "Not Found") {
+                logger.trace("filterOutExpectedErrorsCallback", "Object didn't exist.", deltaTime, "ms", "Still waiting.", key, err, metadata);
+            } else if (err && err.code === "ResourceNotReady") {
+                logger.trace("filterOutExpectedErrorsCallback", "Resource is not ready, check timed out.", deltaTime, "ms", "Still waiting.", key, err, metadata);
+            } else if (err) {
+                logger.info("filterOutExpectedErrorsCallback", "Unknown error", deltaTime, "ms", key, err, metadata);
+
+                onetimeCallback(err, metadata);
+            } else {
+                logger.trace("filterOutExpectedErrorsCallback", "Object exists", deltaTime, "ms", key, metadata);
+
+                onetimeCallback(err, metadata);
+            }
+        };
 
     logger.trace("Agressively waiting", "start", key);
 
     // Agressive waiting!
-    // https://stackoverflow.com/questions/29255582/how-to-configure-interval-and-max-attempts-in-aws-s3-javascript-sdk?rq=1
-    s3.waitFor("objectExists", s3Params, onetimeCallback);
+    // https://stackoverflow.com/questions/29255582/how-to-configure-interval-and-max-attempts-in-aws-s3-javascript-sdk
+    s3.waitFor("objectExists", s3Params, filterOutExpectedErrorsCallback);
 
-    setTimeout(function() {
-        s3.waitFor("objectExists", s3Params, onetimeCallback);
-    }, 1000);
+    timedChecks.forEach(function(timeout) {
+        // TODO: chain timed checks instead of starting all at once.
+        addTimeout(function() {
+            s3.waitFor("objectExists", s3Params, filterOutExpectedErrorsCallback);
+        }, timeout * 1000);
+    });
 
-    setTimeout(function() {
+    addTimeout(function() {
         s3.waitFor("objectExists", s3Params, onetimeCallback);
-    }, 2000);
-
-    setTimeout(function() {
-        s3.waitFor("objectExists", s3Params, onetimeCallback);
-    }, 3000);
-
-    setTimeout(function() {
-        s3.waitFor("objectExists", s3Params, onetimeCallback);
-    }, 4000);
-
-    setTimeout(function() {
-        s3.waitFor("objectExists", s3Params, onetimeCallback);
-    }, 5000);
+    }, 120000);
 }
 
 function waitForClientS3Upload(beforeKey, afterKey, clientFilename) {
@@ -336,8 +362,11 @@ function waitForClientS3Upload(beforeKey, afterKey, clientFilename) {
 
     var objectExistsCallback = function(err, metadata) {
         if (err && err.code === "Not Found") {
-            // TODO: What, it doesn"t exist? Hmm. Check metadata?
+            // TODO: What, it doesn't exist? Hmm. Check metadata?
             logger.error("Object didn't exist", beforeKey, afterKey, err, metadata);
+        } else if (err && err.code === "ResourceNotReady") {
+            // TODO: What, it doesn't exist? Hmm. Check metadata?
+            logger.error("Resource is not ready, check timed out", beforeKey, afterKey, err, metadata);
         } else if (err) {
             logger.error("Unknown error", beforeKey, afterKey, err, metadata);
         } else {
@@ -347,10 +376,7 @@ function waitForClientS3Upload(beforeKey, afterKey, clientFilename) {
         }
     };
 
-    // Give the client browser a second to receive this reply and upload the file to S3 before initial check.
-    setTimeout(function() {
-        waitAggressivelyForS3Object(beforeKey, objectExistsCallback);
-    }, 1000);
+    waitAggressivelyForS3Object(beforeKey, objectExistsCallback);
 }
 
 function getExtensionFromInternetMediaType(internetMediaType) {
