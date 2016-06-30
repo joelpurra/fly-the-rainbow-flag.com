@@ -184,7 +184,8 @@ function blitlineCreateAddOverlayJob(beforeKey, afterKey, signedAfterUrl, client
             "functions": [{
                 "name": "modulate",
                 "params": {
-                    "saturation": 0.5,
+                    "brightness": 1.4,
+                    "saturation": 0.1,
                 },
 
                 "functions": [{
