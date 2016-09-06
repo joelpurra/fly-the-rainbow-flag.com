@@ -168,7 +168,7 @@
                 primaryWebsiteUrl = container.getAttribute("data-meddelare-url"),
 
                 networks = ["facebook", "twitter", "googleplus"],
-                meddelareUrl = "/meddelare/?networks=" + networks.join(",") + "&url=" + primaryWebsiteUrl,
+                meddelareUrl = "/meddelare/?networks=" + networks.join(",") + "&url=" + encodeURIComponent(primaryWebsiteUrl),
                 xhr = createCORSRequest("GET", meddelareUrl),
                 MEDDELARE_COUNT_FALLBACK = "—";
 
