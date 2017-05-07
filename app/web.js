@@ -47,7 +47,18 @@ var configuration = require("configvention"),
     uuid = require("node-uuid"),
     onetime = require("onetime"),
 
-    httpServerPort = configuration.get("PORT") || configuration.get("http-server-port"),
+    getHttpServerPort = function() {
+        var httpServerPortFromEnvironment = parseInt(configuration.get("PORT"), 10),
+            httpServerPortFromConfigurationFile = configuration.get("http-server-port");
+
+        if (isNaN(httpServerPortFromEnvironment) || httpServerPortFromEnvironment <= 0) {
+            return httpServerPortFromConfigurationFile;
+        }
+
+        return httpServerPortFromEnvironment;
+    },
+
+    httpServerPort = getHttpServerPort(),
     httpServerIp = configuration.get("http-server-ip"),
 
     siteRootRelativePath = configuration.get("site-root"),
