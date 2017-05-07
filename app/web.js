@@ -240,7 +240,7 @@ function blitlineCreateAddOverlayJob(beforeKey, afterKey, signedAfterUrl, client
         .then(function(response) {
             logger.trace("Received add overlay job response", beforeKey, afterKey, signedAfterUrl, clientFilename, response);
 
-            // http://www.blitline.com/docs/postback#json
+            // https://www.blitline.com/docs/postback#json
             try {
                 if (response.results.failed_image_identifiers) {
                     // TODO: handle error.
