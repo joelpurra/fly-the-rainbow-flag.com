@@ -14,7 +14,7 @@
     "meddelare-express": "^1.0.0",
     "morgan": "^1.5.3",
     "node-uuid": "^1.4.3",
-    "onetime": "^1.0.0",
+    "onetime": "^2.0.1",
     "simple_blitline_node": "^3.0.1",
     "st": "^1.2.0"
   },
