@@ -105,30 +105,6 @@ var configuration = require("configvention"),
     aws = require("aws-sdk"),
     Blitline = require("simple_blitline_node"),
 
-    getChildLogger = function(name) {
-        var childLogger = logger.child({
-            child: name,
-        });
-
-        // Sort of normalize function name with console.log.
-        childLogger.log = childLogger.trace;
-
-        return childLogger;
-    },
-
-    meddelareExpressLogger = getChildLogger("MeddelareExpress"),
-    meddelareCountersLogger = getChildLogger("MeddelareCounters"),
-
-    MeddelareExpress = require("meddelare-express"),
-    meddelareExpressOptions = {
-        mogger: meddelareExpressLogger,
-        httpCacheTime: process.env.CACHE_TIME,
-        meddelareCounters: {
-            logger: meddelareCountersLogger,
-        },
-    },
-    meddelareExpress = new MeddelareExpress(meddelareExpressOptions),
-
     app = express();
 
 app.use(expressLogger);
@@ -141,8 +117,6 @@ app.use(helmet.hsts({
 }));
 
 app.use(configuredHttpsRedirect());
-
-app.use("/meddelare/", meddelareExpress.getRouter());
 
 aws.config.update({
     accessKeyId: AWS_ACCESS_KEY,

@@ -8,8 +8,7 @@
             // Check if the XMLHttpRequest object has a "withCredentials" property.
             // "withCredentials" only exists on XMLHTTPRequest2 objects.
             xhr.open(method, url, true);
-
-        } else if (typeof XDomainRequest != "undefined") {
+        } else if (typeof XDomainRequest !== "undefined") {
             // Otherwise, check if XDomainRequest.
             // XDomainRequest only exists in IE, and is IE"s way of making CORS requests.
             xhr = new XDomainRequest();
@@ -155,83 +154,5 @@
         function showError(msg) {
             document.getElementById("log").innerHTML += "<p>" + msg + "</p>";
         }
-    })();
-
-    (function() {
-        // Self-hosted Meddelare.
-        // https://meddelare.com/
-        function updateMeddelare() {
-            // TODO: update if using more than one container.
-            var containers = document.querySelectorAll(".meddelare-container"),
-                container = containers[0],
-                // TODO: issue only one Meddelare request per share-URL.
-                primaryWebsiteUrl = container.getAttribute("data-meddelare-url"),
-
-                networks = ["facebook", "twitter", "googleplus"],
-                meddelareUrl = "/meddelare/?networks=" + networks.join(",") + "&url=" + encodeURIComponent(primaryWebsiteUrl),
-                xhr = createCORSRequest("GET", meddelareUrl),
-                MEDDELARE_COUNT_FALLBACK = "—";
-
-            if (!xhr) {
-                console.error("Could not update Meddelare social media button counts.");
-
-                clearNetworkCounts();
-
-                return;
-            }
-
-            xhr.addEventListener("error", logMeddelareError);
-            xhr.addEventListener("abort", logMeddelareError);
-            xhr.addEventListener("time", logMeddelareError);
-
-            xhr.addEventListener("load", function() {
-                if (xhr.status === 200) {
-                    var response = JSON.parse(xhr.responseText);
-
-                    networks.forEach(function(network) {
-                        var receivedCount = parseInt(response[network], 10);
-                        var count = MEDDELARE_COUNT_FALLBACK;
-
-                        if (receivedCount >= 0) {
-                            count = receivedCount;
-                        }
-
-                        setNetworkCount(network, count);
-                    });
-                } else {
-                    clearNetworkCounts();
-                }
-            });
-
-            xhr.send();
-
-            function logMeddelareError(evt) {
-                console.error("Could not update Meddelare social media button counts.", evt);
-
-                clearNetworkCounts();
-            }
-
-            function getNetworkElements(network) {
-                var elements = document.querySelectorAll("[data-meddelare-network=" + network + "]");
-
-                return elements;
-            }
-
-            function setNetworkCount(network, count) {
-                // TODO: update if using more than one container.
-                var elements = getNetworkElements(network),
-                    element = elements[0];
-
-                element.setAttribute("data-count", count);
-            }
-
-            function clearNetworkCounts() {
-                networks.forEach(function(network) {
-                    setNetworkCount(network, MEDDELARE_COUNT_FALLBACK);
-                });
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", updateMeddelare);
     }());
 }());
