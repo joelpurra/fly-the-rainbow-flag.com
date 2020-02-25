@@ -25,14 +25,12 @@
     "eslint-plugin-node": "^4.2.3",
     "eslint-plugin-promise": "^3.8.0",
     "eslint-plugin-standard": "^3.1.0",
-    "node-inspector": "^1.1.2",
     "nodemon": "^1.19.4",
     "pre-commit": "^1.1.3"
   },
   "scripts": {
     "start": "NODE_ENV=production node app/web.js",
-    "inspector": "node ./node_modules/.bin/node-inspector",
-    "debug": "NODE_ENV=development node ./node_modules/.bin/nodemon --debug app/web.js | node ./node_modules/.bin/bunyan",
+    "debug": "NODE_ENV=development ./node_modules/.bin/nodemon --inspect app/web.js | node ./node_modules/.bin/bunyan",
     "test": "npm run --silent lint && echo && echo 'No tests have been added!'",
     "lint": "npm run --silent eslint",
     "eslint": "node ./node_modules/.bin/eslint app/ lib/"
