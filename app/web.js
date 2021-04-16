@@ -112,7 +112,7 @@ app.use(expressLogger);
 app.use(helmet());
 app.use(helmet.hsts({
     maxAge: 15724800000,
-    includeSubdomains: true,
+    includeSubDomains: true,
     force: configuration.get("enable-hsts") === true,
 }));
 

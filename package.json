@@ -10,7 +10,7 @@
     "bunyan": "^1.8.15",
     "configvention": "^2.0.0",
     "express": "^4.17.1",
-    "helmet": "^3.23.3",
+    "helmet": "^4.4.1",
     "morgan": "^1.10.0",
     "node-uuid": "^1.4.8",
     "onetime": "^2.0.1",
