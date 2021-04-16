@@ -3,7 +3,7 @@
     // By Monsur Hossain
     // Apache 2.0 License
     function createCORSRequest(method, url) {
-        var xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
         if ("withCredentials" in xhr) {
             // Check if the XMLHttpRequest object has a "withCredentials" property.
             // "withCredentials" only exists on XMLHTTPRequest2 objects.
@@ -24,7 +24,7 @@
     (function() {
         function waitForAfterImage(afterUrl) {
             // Expecting a Access-Control-Allow-Origin error here, as there it no such header until the file exists.
-            var xhr = createCORSRequest("GET", afterUrl);
+            const xhr = createCORSRequest("GET", afterUrl);
 
             if (!xhr) {
                 showError("This browser does not seem support checking for the rainbowified photo =(");
@@ -74,7 +74,7 @@
             Function to carry out the actual PUT request to S3 using the signed request from the app.
         */
         function uploadFile(file, signedRequest, beforeUrl, afterUrl, filename) {
-            var xhr = createCORSRequest("PUT", signedRequest);
+            const xhr = createCORSRequest("PUT", signedRequest);
 
             if (!xhr) {
                 showError("This browser does not seem to support uploading photos to the server =(");
@@ -109,13 +109,13 @@
             request.
         */
         function getSignedRequest(file) {
-            var fileName = (file.name || "");
-            var xhr = new XMLHttpRequest();
+            const fileName = (file.name || ""),
+                xhr = new XMLHttpRequest();
             xhr.open("GET", "/sign-s3?filename=" + file.name + "&filetype=" + file.type);
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
-                        var response = JSON.parse(xhr.responseText);
+                        const response = JSON.parse(xhr.responseText);
                         uploadFile(file, response.signedRequest, response.beforeUrl, response.afterUrl, fileName);
                     } else {
                         console.error("getSignedRequest", xhr);
@@ -131,8 +131,8 @@
            start upload procedure by asking for a signed request from the app.
         */
         function initUpload() {
-            var files = document.getElementById("file-input").files;
-            var file = files[0];
+            const files = document.getElementById("file-input").files,
+                file = files[0];
 
             if (file == null) {
                 return;

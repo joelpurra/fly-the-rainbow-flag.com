@@ -1,4 +1,4 @@
-var configuration = require("configvention"),
+const configuration = require("configvention"),
 
     AWS_ACCESS_KEY = configuration.get("AWS_ACCESS_KEY"),
     AWS_SECRET_KEY = configuration.get("AWS_SECRET_KEY"),
@@ -48,7 +48,7 @@ var configuration = require("configvention"),
     onetime = require("onetime"),
 
     getHttpServerPort = function() {
-        var httpServerPortFromEnvironment = parseInt(configuration.get("PORT"), 10),
+        const httpServerPortFromEnvironment = parseInt(configuration.get("PORT"), 10),
             httpServerPortFromConfigurationFile = configuration.get("http-server-port");
 
         if (isNaN(httpServerPortFromEnvironment) || httpServerPortFromEnvironment <= 0) {
@@ -77,13 +77,13 @@ var configuration = require("configvention"),
     configuredHttpsRedirect = require("../lib/configuredHttpsRedirect.js"),
 
     resolvePath = function() {
-        var args = [].slice.call(arguments),
+        const args = [].slice.call(arguments),
             parts = [__dirname].concat(args);
 
         return path.resolve.apply(path, parts);
     },
     resolvePathFromProjectRoot = function() {
-        var args = [].slice.call(arguments),
+        const args = [].slice.call(arguments),
             parts = [relativePathToRootFromThisFile].concat(args);
 
         return resolvePath.apply(null, parts);
@@ -130,7 +130,7 @@ aws.config.update({
 function shortDateString(date) {
     date = date || new Date();
 
-    var shortDate = date.toISOString().split("T")[0];
+    const shortDate = date.toISOString().split("T")[0];
 
     return shortDate;
 }
@@ -162,7 +162,7 @@ function blitlineCreateAddOverlayJob(beforeKey, afterKey, signedAfterUrl, client
 
     logger.trace("Creating add overlay job", beforeKey, afterKey, signedAfterUrl, clientFilename);
 
-    var blitline = new Blitline(),
+    const blitline = new Blitline(),
         job = {
             "application_id": BLITLINE_APP_ID,
             "src": getS3UrlFromKey(beforeKey),
@@ -246,7 +246,7 @@ function getS3BitlineUrl(beforeKey, afterKey, clientFilename) {
 
     logger.trace("Fetching S3 signed putObject url for Blitline", beforeKey, afterKey, clientFilename);
 
-    var s3 = new aws.S3(),
+    const s3 = new aws.S3(),
         s3Params = {
             Bucket: S3_BUCKET,
             Key: afterKey,
@@ -275,7 +275,7 @@ function waitAggressivelyForS3Object(key, callback) {
         timedChecks = [1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110],
         timeouts = [],
         addTimeout = function(fn, timeout) {
-            var timeoutId = setTimeout(fn, timeout);
+            const timeoutId = setTimeout(fn, timeout);
 
             timeouts.push(timeoutId);
         },
@@ -285,7 +285,7 @@ function waitAggressivelyForS3Object(key, callback) {
             });
         },
         onetimeCallback = onetime(function(err, metadata) {
-            var endTime = new Date().valueOf(),
+            const endTime = new Date().valueOf(),
                 deltaTime = endTime - startTime;
 
             // TODO: chain timed checks instead of starting all at once.
@@ -298,7 +298,7 @@ function waitAggressivelyForS3Object(key, callback) {
         startTime = new Date().valueOf(),
         filterOutExpectedErrorsCallback = function(err, metadata) {
             // TODO: chain timed checks instead of starting all at once.
-            var endTime = new Date().valueOf(),
+            const endTime = new Date().valueOf(),
                 deltaTime = endTime - startTime;
 
             if (err && err.code === "Not Found") {
@@ -345,7 +345,7 @@ function waitForClientS3Upload(beforeKey, afterKey, clientFilename) {
 
     logger.trace("Waiting for file upload", beforeKey, afterKey, clientFilename);
 
-    var objectExistsCallback = function(err, metadata) {
+    const objectExistsCallback = function(err, metadata) {
         if (err && err.code === "Not Found") {
             // TODO: What, it doesn't exist? Hmm. Check metadata?
             logger.error("Object didn't exist", beforeKey, afterKey, err, metadata);
@@ -397,7 +397,7 @@ function getExtensionFromInternetMediaType(internetMediaType) {
             return;
         }
 
-        var s3 = new aws.S3(),
+        const s3 = new aws.S3(),
             clientFilename = (req.query.filename || ""),
             imageContentType = req.query.filetype,
             extension = getExtensionFromInternetMediaType(imageContentType),
@@ -424,7 +424,7 @@ function getExtensionFromInternetMediaType(internetMediaType) {
             if (err) {
                 logger.error(err);
             } else {
-                var result = {
+                const result = {
                     signedRequest: signedBeforeUrl,
                     beforeUrl: beforeUrl,
                     afterUrl: afterUrl,
