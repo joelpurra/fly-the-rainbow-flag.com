@@ -266,7 +266,7 @@ function getS3BitlineUrl(beforeKey, afterKey, clientFilename) {
 }
 
 function waitAggressivelyForS3Object(key, callback) {
-    var s3 = new aws.S3(),
+    const s3 = new aws.S3(),
         s3Params = {
             Bucket: S3_BUCKET,
             Key: key,

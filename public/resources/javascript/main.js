@@ -11,6 +11,7 @@
         } else if (typeof XDomainRequest !== "undefined") {
             // Otherwise, check if XDomainRequest.
             // XDomainRequest only exists in IE, and is IE"s way of making CORS requests.
+            // eslint-disable-next-line no-undef
             xhr = new XDomainRequest();
             xhr.open(method, url);
         } else {
@@ -32,7 +33,7 @@
                 return;
             }
 
-            xhr.addEventListener("load", function(evt) {
+            xhr.addEventListener("load", function() {
                 if (xhr.status === 200) {
                     setImage();
                 } else {
@@ -47,6 +48,7 @@
             xhr.send();
 
             function logAndRetry(evt) {
+                // eslint-disable-next-line no-console
                 console.error("Could not check for after image", evt);
                 showError("There was a problem checking for the rainbowified photo =(");
 
@@ -73,7 +75,7 @@
         /*
             Function to carry out the actual PUT request to S3 using the signed request from the app.
         */
-        function uploadFile(file, signedRequest, beforeUrl, afterUrl, filename) {
+        function uploadFile(file, signedRequest, beforeUrl, afterUrl, _filename) {
             const xhr = createCORSRequest("PUT", signedRequest);
 
             if (!xhr) {
@@ -95,6 +97,7 @@
             };
 
             xhr.onerror = function(evt) {
+                // eslint-disable-next-line no-console
                 console.error("uploadFile", xhr, evt);
 
                 showError("Could not upload file =(");
@@ -118,6 +121,7 @@
                         const response = JSON.parse(xhr.responseText);
                         uploadFile(file, response.signedRequest, response.beforeUrl, response.afterUrl, fileName);
                     } else {
+                        // eslint-disable-next-line no-console
                         console.error("getSignedRequest", xhr);
                         showError("Could not get signed URL =(");
                     }
@@ -134,7 +138,7 @@
             const files = document.getElementById("file-input").files,
                 file = files[0];
 
-            if (file == null) {
+            if (file === null) {
                 return;
             }
 
