@@ -13,7 +13,7 @@
     "helmet": "^4.4.1",
     "morgan": "^1.10.0",
     "node-uuid": "^1.4.8",
-    "onetime": "^2.0.1",
+    "onetime": "^5.1.2",
     "simple_blitline_node": "^3.0.1",
     "st": "^2.0.0"
   },
