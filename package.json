@@ -15,7 +15,7 @@
     "node-uuid": "^1.4.8",
     "onetime": "^2.0.1",
     "simple_blitline_node": "^3.0.1",
-    "st": "^1.2.2"
+    "st": "^2.0.0"
   },
   "devDependencies": {
     "eslint": "^3.19.0",
