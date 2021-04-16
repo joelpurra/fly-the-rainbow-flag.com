@@ -47,7 +47,7 @@ const configuration = require("configvention"),
     uuid = require("node-uuid"),
     onetime = require("onetime"),
 
-    getHttpServerPort = function() {
+    getHttpServerPort = () => {
         const httpServerPortFromEnvironment = parseInt(configuration.get("PORT"), 10),
             httpServerPortFromConfigurationFile = configuration.get("http-server-port");
 
@@ -67,30 +67,285 @@ const configuration = require("configvention"),
     express = require("express"),
     morgan = require("morgan"),
     expressLogger = morgan("combined", {
-        skip: function(req, res) {
-            return res.statusCode < 400;
-        },
+        skip: (req, res) => res.statusCode < 400,
     }),
     helmet = require("helmet"),
     st = require("st"),
     path = require("path"),
     configuredHttpsRedirect = require("../lib/configuredHttpsRedirect.js"),
 
-    resolvePath = function() {
-        const args = [].slice.call(arguments),
-            parts = [__dirname].concat(args);
+    resolvePath = (...args) => {
+        const parts = [__dirname].concat(args);
 
         return path.resolve.apply(path, parts);
     },
-    resolvePathFromProjectRoot = function() {
-        const args = [].slice.call(arguments),
-            parts = [relativePathToRootFromThisFile].concat(args);
+    resolvePathFromProjectRoot = (...args) => {
+        const parts = [relativePathToRootFromThisFile].concat(args);
 
         return resolvePath.apply(null, parts);
     },
 
-    startsWith = function(str, check) {
-        return str.substring(0, check.length) === check;
+    startsWith = (str, check) => str.substring(0, check.length) === check,
+
+    shortDateString = (date) => {
+        date = date || new Date();
+
+        const shortDate = date.toISOString().split("T")[0];
+
+        return shortDate;
+    },
+
+    getBeforeKey = (generatedId, extension) => `before/${shortDateString()}/${new Date().valueOf()}_${generatedId}${extension}`,
+
+    getAfterKey = (beforeKey) => beforeKey.replace(/^before\//, "after/"),
+
+    getS3UrlFromKey = (key) => {
+        // TODO: use a ready-made AWS S3 method instead.
+        if (startsWith(key, "/")) {
+            throw new Error("Key must not start with a slash.");
+        }
+
+        return `https://${S3_BUCKET}.s3.${AWS_REGION}.amazonaws.com/${key}`;
+    },
+
+    blitlineCreateAddOverlayJob = (beforeKey, afterKey, signedAfterUrl, clientFilename) => {
+        if (!startsWith(beforeKey, "before/")) {
+            throw new Error("beforeKey must start with before/.");
+        }
+
+        if (!startsWith(afterKey, "after/")) {
+            throw new Error("afterKey must start with after/.");
+        }
+
+        logger.trace("Creating add overlay job", beforeKey, afterKey, signedAfterUrl, clientFilename);
+
+        const blitline = new Blitline(),
+            job = {
+                "application_id": BLITLINE_APP_ID,
+                "src": getS3UrlFromKey(beforeKey),
+                "wait_retry_delay": 5,
+                "functions": [{
+                    "name": "modulate",
+                    "params": {
+                        "saturation": 0.1,
+                    },
+
+                    "functions": [{
+                        "name": "dissolve",
+                        "params": {
+                            // This file used to be hosted locally, but Blitline seemed to not be able to load it from the main domain.
+                            // "src": "https://fly-the-rainbow-flag.com/resources/image/overlay/rainbow-flag-superwide.svg",
+                            "src": "https://fly-the-rainbow-flag.s3.eu-central-1.amazonaws.com/resources/image/overlay/rainbow-flag-superwide.svg",
+                            "gravity": "CenterGravity",
+                            "scale_to_match": true,
+                            "src_percentage": 0.3,
+                            "dst_percentage": 0.7,
+                        },
+
+                        "functions": [{
+                            "name": "modulate",
+                            "params": {
+                                "brightness": 1.2,
+                                "saturation": 1.25,
+                            },
+
+                            "save": {
+                                "image_identifier": afterKey,
+                                "s3_destination": {
+                                    "signed_url": signedAfterUrl,
+                                    "headers": {
+                                        // TODO: save original client file name.
+                                        //     "x-amz-meta-name": clientFilename
+                                        "x-amz-acl": "public-read",
+                                    },
+                                },
+                            },
+                        }],
+                    }],
+                }],
+            };
+
+        blitline.addJob(job);
+
+        blitline.postJobs()
+            .then((response) => {
+                logger.trace("Received add overlay job response", beforeKey, afterKey, signedAfterUrl, clientFilename, response);
+
+                // https://www.blitline.com/docs/postback#json
+                try {
+                    if (response.results.failed_image_identifiers) {
+                        // TODO: handle error.
+                        logger.error("Blitline",
+                            "Failed image identifiers",
+                            beforeKey,
+                            afterKey,
+                            signedAfterUrl,
+                            clientFilename,
+                            response,
+                            response.results.failed_image_identifiers,
+                        );
+                    } else {
+                        // TODO: let the client know?
+                        logger.trace(
+                            "Blitline",
+                            "Success",
+                            beforeKey,
+                            afterKey,
+                            signedAfterUrl,
+                            clientFilename,
+                            response,
+                            response.results,
+                            response.results
+                                .map((result) => result.images), response.results
+                                .map((result) => result.images
+                                    .map((image) => `'${image.image_identifier}' '${image.s3_url}'`)));
+                    }
+                } catch (e) {
+                    logger.error("Blitline", "Catch", beforeKey, afterKey, clientFilename, response, e);
+                }
+            });
+    },
+
+    getS3BitlineUrl = (beforeKey, afterKey, clientFilename) => {
+        if (!startsWith(beforeKey, "before/")) {
+            throw new Error("beforeKey must start with before/.");
+        }
+
+        if (!startsWith(afterKey, "after/")) {
+            throw new Error("afterKey must start with after/.");
+        }
+
+        logger.trace("Fetching S3 signed putObject url for Blitline", beforeKey, afterKey, clientFilename);
+
+        const s3 = new aws.S3(),
+            s3Params = {
+                Bucket: S3_BUCKET,
+                Key: afterKey,
+                Expires: 60,
+                ACL: "public-read",
+                // TODO: save original client file name.
+                // Metadata: metadata
+            };
+
+        s3.getSignedUrl("putObject", s3Params, function(err, signedAfterUrl) {
+            if (err) {
+                logger.error(err);
+            } else {
+                blitlineCreateAddOverlayJob(beforeKey, afterKey, signedAfterUrl, clientFilename);
+            }
+        });
+    },
+
+    waitAggressivelyForS3Object = (key, callback) => {
+        const s3 = new aws.S3(),
+            s3Params = {
+                Bucket: S3_BUCKET,
+                Key: key,
+            },
+            // TODO: chain timed checks instead of starting all at once.
+            timedChecks = [1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110],
+            timeouts = [],
+            addTimeout = function(fn, timeout) {
+                const timeoutId = setTimeout(fn, timeout);
+
+                timeouts.push(timeoutId);
+            },
+            clearTimeouts = function() {
+                timeouts.forEach(function(timeoutId) {
+                    clearTimeout(timeoutId);
+                });
+            },
+            onetimeCallback = onetime(function(err, metadata) {
+                const endTime = new Date().valueOf(),
+                    deltaTime = endTime - startTime;
+
+                // TODO: chain timed checks instead of starting all at once.
+                clearTimeouts();
+
+                logger.trace("Agressively waiting", "end", key, deltaTime, "ms");
+
+                callback(err, metadata);
+            }),
+            startTime = new Date().valueOf(),
+            filterOutExpectedErrorsCallback = function(err, metadata) {
+                // TODO: chain timed checks instead of starting all at once.
+                const endTime = new Date().valueOf(),
+                    deltaTime = endTime - startTime;
+
+                if (err && err.code === "Not Found") {
+                    logger.trace("filterOutExpectedErrorsCallback", "Object didn't exist.", deltaTime, "ms", "Still waiting.", key, err, metadata);
+                } else if (err && err.code === "ResourceNotReady") {
+                    logger.trace("filterOutExpectedErrorsCallback", "Resource is not ready, check timed out.", deltaTime, "ms", "Still waiting.", key, err, metadata);
+                } else if (err) {
+                    logger.info("filterOutExpectedErrorsCallback", "Unknown error", deltaTime, "ms", key, err, metadata);
+
+                    onetimeCallback(err, metadata);
+                } else {
+                    logger.trace("filterOutExpectedErrorsCallback", "Object exists", deltaTime, "ms", key, metadata);
+
+                    onetimeCallback(err, metadata);
+                }
+            };
+
+        logger.trace("Agressively waiting", "start", key);
+
+        // Agressive waiting!
+        // https://stackoverflow.com/questions/29255582/how-to-configure-interval-and-max-attempts-in-aws-s3-javascript-sdk
+        s3.waitFor("objectExists", s3Params, filterOutExpectedErrorsCallback);
+
+        timedChecks.forEach(function(timeout) {
+            // TODO: chain timed checks instead of starting all at once.
+            addTimeout(function() {
+                s3.waitFor("objectExists", s3Params, filterOutExpectedErrorsCallback);
+            }, timeout * 1000);
+        });
+
+        addTimeout(function() {
+            s3.waitFor("objectExists", s3Params, onetimeCallback);
+        }, 120000);
+    },
+
+    waitForClientS3Upload = (beforeKey, afterKey, clientFilename) => {
+        if (!startsWith(beforeKey, "before/")) {
+            throw new Error("beforeKey must start with before/.");
+        }
+
+        if (!startsWith(afterKey, "after/")) {
+            throw new Error("afterKey must start with after/.");
+        }
+
+        logger.trace("Waiting for file upload", beforeKey, afterKey, clientFilename);
+
+        const objectExistsCallback = function(err, metadata) {
+            if (err && err.code === "Not Found") {
+                // TODO: What, it doesn't exist? Hmm. Check metadata?
+                logger.error("Object didn't exist", beforeKey, afterKey, err, metadata);
+            } else if (err && err.code === "ResourceNotReady") {
+                // TODO: What, it doesn't exist? Hmm. Check metadata?
+                logger.error("Resource is not ready, check timed out", beforeKey, afterKey, err, metadata);
+            } else if (err) {
+                logger.error("Unknown error", beforeKey, afterKey, err, metadata);
+            } else {
+                logger.trace("Object exists", beforeKey, afterKey, metadata);
+
+                getS3BitlineUrl(beforeKey, afterKey, clientFilename);
+            }
+        };
+
+        waitAggressivelyForS3Object(beforeKey, objectExistsCallback);
+    },
+
+    getExtensionFromInternetMediaType = (internetMediaType) => {
+        switch (internetMediaType) {
+            case "image/jpeg":
+                return ".jpg";
+            case "image/png":
+                return ".png";
+            default:
+                break;
+        }
+
+        return null;
     },
 
     // Path to static resources like index.html, css etcetera
@@ -127,268 +382,17 @@ aws.config.update({
     signatureVersion: "v4",
 });
 
-function shortDateString(date) {
-    date = date || new Date();
-
-    const shortDate = date.toISOString().split("T")[0];
-
-    return shortDate;
-}
-
-function getBeforeKey(generatedId, extension) {
-    return "before/" + shortDateString() + "/" + new Date().valueOf() + "_" + generatedId + extension;
-}
-
-function getAfterKey(beforeKey) {
-    return beforeKey.replace(/^before\//, "after/");
-}
-
-function getS3UrlFromKey(key) {
-    // TODO: use a ready-made AWS S3 method instead.
-    if (startsWith(key, "/")) {
-        throw new Error("Key must not start with a slash.");
-    }
-    return "https://" + S3_BUCKET + ".s3." + AWS_REGION + ".amazonaws.com/" + key;
-}
-
-function blitlineCreateAddOverlayJob(beforeKey, afterKey, signedAfterUrl, clientFilename) {
-    if (!startsWith(beforeKey, "before/")) {
-        throw new Error("beforeKey must start with before/.");
-    }
-
-    if (!startsWith(afterKey, "after/")) {
-        throw new Error("afterKey must start with after/.");
-    }
-
-    logger.trace("Creating add overlay job", beforeKey, afterKey, signedAfterUrl, clientFilename);
-
-    const blitline = new Blitline(),
-        job = {
-            "application_id": BLITLINE_APP_ID,
-            "src": getS3UrlFromKey(beforeKey),
-            "wait_retry_delay": 5,
-            "functions": [{
-                "name": "modulate",
-                "params": {
-                    "saturation": 0.1,
-                },
-
-                "functions": [{
-                    "name": "dissolve",
-                    "params": {
-                        // This file used to be hosted locally, but Blitline seemed to not be able to load it from the main domain.
-                        // "src": "https://fly-the-rainbow-flag.com/resources/image/overlay/rainbow-flag-superwide.svg",
-                        "src": "https://fly-the-rainbow-flag.s3.eu-central-1.amazonaws.com/resources/image/overlay/rainbow-flag-superwide.svg",
-                        "gravity": "CenterGravity",
-                        "scale_to_match": true,
-                        "src_percentage": 0.3,
-                        "dst_percentage": 0.7,
-                    },
-
-                    "functions": [{
-                        "name": "modulate",
-                        "params": {
-                            "brightness": 1.2,
-                            "saturation": 1.25,
-                        },
-
-                        "save": {
-                            "image_identifier": afterKey,
-                            "s3_destination": {
-                                "signed_url": signedAfterUrl,
-                                "headers": {
-                                    // TODO: save original client file name.
-                                    //     "x-amz-meta-name": clientFilename
-                                    "x-amz-acl": "public-read",
-                                },
-                            },
-                        },
-                    }],
-                }],
-            }],
-        };
-
-    blitline.addJob(job);
-
-    blitline.postJobs()
-        .then(function(response) {
-            logger.trace("Received add overlay job response", beforeKey, afterKey, signedAfterUrl, clientFilename, response);
-
-            // https://www.blitline.com/docs/postback#json
-            try {
-                if (response.results.failed_image_identifiers) {
-                    // TODO: handle error.
-                    logger.error("Blitline", "Failed image identifiers", beforeKey, afterKey, signedAfterUrl, clientFilename, response, response.results.failed_image_identifiers);
-                } else {
-                    // TODO: let the client know?
-                    logger.trace("Blitline", "Success", beforeKey, afterKey, signedAfterUrl, clientFilename, response, response.results, response.results.map(function(result) {
-                        return result.images;
-                    }), response.results.map(function(result) {
-                        return result.images.map(function(image) {
-                            return "'" + image.image_identifier + "' '" + image.s3_url + "'";
-                        });
-                    }));
-                }
-            } catch (e) {
-                logger.error("Blitline", "Catch", beforeKey, afterKey, clientFilename, response, e);
-            }
-        });
-}
-
-function getS3BitlineUrl(beforeKey, afterKey, clientFilename) {
-    if (!startsWith(beforeKey, "before/")) {
-        throw new Error("beforeKey must start with before/.");
-    }
-
-    if (!startsWith(afterKey, "after/")) {
-        throw new Error("afterKey must start with after/.");
-    }
-
-    logger.trace("Fetching S3 signed putObject url for Blitline", beforeKey, afterKey, clientFilename);
-
-    const s3 = new aws.S3(),
-        s3Params = {
-            Bucket: S3_BUCKET,
-            Key: afterKey,
-            Expires: 60,
-            ACL: "public-read",
-            // TODO: save original client file name.
-            // Metadata: metadata
-        };
-
-    s3.getSignedUrl("putObject", s3Params, function(err, signedAfterUrl) {
-        if (err) {
-            logger.error(err);
-        } else {
-            blitlineCreateAddOverlayJob(beforeKey, afterKey, signedAfterUrl, clientFilename);
-        }
-    });
-}
-
-function waitAggressivelyForS3Object(key, callback) {
-    const s3 = new aws.S3(),
-        s3Params = {
-            Bucket: S3_BUCKET,
-            Key: key,
-        },
-        // TODO: chain timed checks instead of starting all at once.
-        timedChecks = [1, 2, 3, 4, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110],
-        timeouts = [],
-        addTimeout = function(fn, timeout) {
-            const timeoutId = setTimeout(fn, timeout);
-
-            timeouts.push(timeoutId);
-        },
-        clearTimeouts = function() {
-            timeouts.forEach(function(timeoutId) {
-                clearTimeout(timeoutId);
-            });
-        },
-        onetimeCallback = onetime(function(err, metadata) {
-            const endTime = new Date().valueOf(),
-                deltaTime = endTime - startTime;
-
-            // TODO: chain timed checks instead of starting all at once.
-            clearTimeouts();
-
-            logger.trace("Agressively waiting", "end", key, deltaTime, "ms");
-
-            callback(err, metadata);
-        }),
-        startTime = new Date().valueOf(),
-        filterOutExpectedErrorsCallback = function(err, metadata) {
-            // TODO: chain timed checks instead of starting all at once.
-            const endTime = new Date().valueOf(),
-                deltaTime = endTime - startTime;
-
-            if (err && err.code === "Not Found") {
-                logger.trace("filterOutExpectedErrorsCallback", "Object didn't exist.", deltaTime, "ms", "Still waiting.", key, err, metadata);
-            } else if (err && err.code === "ResourceNotReady") {
-                logger.trace("filterOutExpectedErrorsCallback", "Resource is not ready, check timed out.", deltaTime, "ms", "Still waiting.", key, err, metadata);
-            } else if (err) {
-                logger.info("filterOutExpectedErrorsCallback", "Unknown error", deltaTime, "ms", key, err, metadata);
-
-                onetimeCallback(err, metadata);
-            } else {
-                logger.trace("filterOutExpectedErrorsCallback", "Object exists", deltaTime, "ms", key, metadata);
-
-                onetimeCallback(err, metadata);
-            }
-        };
-
-    logger.trace("Agressively waiting", "start", key);
-
-    // Agressive waiting!
-    // https://stackoverflow.com/questions/29255582/how-to-configure-interval-and-max-attempts-in-aws-s3-javascript-sdk
-    s3.waitFor("objectExists", s3Params, filterOutExpectedErrorsCallback);
-
-    timedChecks.forEach(function(timeout) {
-        // TODO: chain timed checks instead of starting all at once.
-        addTimeout(function() {
-            s3.waitFor("objectExists", s3Params, filterOutExpectedErrorsCallback);
-        }, timeout * 1000);
-    });
-
-    addTimeout(function() {
-        s3.waitFor("objectExists", s3Params, onetimeCallback);
-    }, 120000);
-}
-
-function waitForClientS3Upload(beforeKey, afterKey, clientFilename) {
-    if (!startsWith(beforeKey, "before/")) {
-        throw new Error("beforeKey must start with before/.");
-    }
-
-    if (!startsWith(afterKey, "after/")) {
-        throw new Error("afterKey must start with after/.");
-    }
-
-    logger.trace("Waiting for file upload", beforeKey, afterKey, clientFilename);
-
-    const objectExistsCallback = function(err, metadata) {
-        if (err && err.code === "Not Found") {
-            // TODO: What, it doesn't exist? Hmm. Check metadata?
-            logger.error("Object didn't exist", beforeKey, afterKey, err, metadata);
-        } else if (err && err.code === "ResourceNotReady") {
-            // TODO: What, it doesn't exist? Hmm. Check metadata?
-            logger.error("Resource is not ready, check timed out", beforeKey, afterKey, err, metadata);
-        } else if (err) {
-            logger.error("Unknown error", beforeKey, afterKey, err, metadata);
-        } else {
-            logger.trace("Object exists", beforeKey, afterKey, metadata);
-
-            getS3BitlineUrl(beforeKey, afterKey, clientFilename);
-        }
-    };
-
-    waitAggressivelyForS3Object(beforeKey, objectExistsCallback);
-}
-
-function getExtensionFromInternetMediaType(internetMediaType) {
-    switch (internetMediaType) {
-        case "image/jpeg":
-            return ".jpg";
-        case "image/png":
-            return ".png";
-        default:
-            break;
-    }
-
-    return null;
-}
-
-(function() {
+(() => {
     // Based on https://github.com/flyingsparx/NodeDirectUploader
     // Apache 2.0 license.
     // By https://github.com/flyingsparx/
     // https://devcenter.heroku.com/articles/s3-upload-node
-
     /*
      * Respond to GET requests to /sign-s3.
      * Upon request, return JSON containing the temporarily-signed S3 request and the
      * anticipated URL of the image.
      */
-    app.get("/sign-s3", function(req, res) {
+    app.get("/sign-s3", (req, res) => {
         // TODO: better verification.
         // TODO: check which types blitline can handle.
         if (req.query.filetype !== "image/jpeg" && req.query.filetype !== "image/png") {
@@ -420,7 +424,7 @@ function getExtensionFromInternetMediaType(internetMediaType) {
                 // Metadata: metadata
             };
 
-        s3.getSignedUrl("putObject", s3Params, function(err, signedBeforeUrl) {
+        s3.getSignedUrl("putObject", s3Params, (err, signedBeforeUrl) => {
             if (err) {
                 logger.error(err);
             } else {
@@ -436,11 +440,11 @@ function getExtensionFromInternetMediaType(internetMediaType) {
             }
         });
     });
-}());
+})();
 
 app.use(mount);
 
-app.listen(httpServerPort, httpServerIp, function() {
+app.listen(httpServerPort, httpServerIp, () => {
     logger.info("Listening on port", httpServerPort);
     logger.info("Bound to interface with ip", httpServerIp);
     logger.info("Serving site root from folder", siteRootPath);
