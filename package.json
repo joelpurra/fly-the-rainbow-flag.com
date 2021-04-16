@@ -35,8 +35,8 @@
     "eslint": "node ./node_modules/.bin/eslint app/ lib/"
   },
   "engines": {
-    "node": "^6.0.0",
-    "npm": "^3.0.0"
+    "node": "^10.0.0",
+    "npm": "^6.0.0"
   },
   "repository": {
     "type": "git",
