@@ -28,10 +28,12 @@
   },
   "scripts": {
     "start": "NODE_ENV=production node app/web.js",
-    "debug": "NODE_ENV=development ./node_modules/.bin/nodemon --inspect app/web.js | node ./node_modules/.bin/bunyan",
+    "debug": "NODE_ENV=development nodemon --inspect app/web.js | bunyan",
     "test": "npm run --silent lint && echo && echo 'No tests have been added!'",
-    "lint": "npm run --silent eslint",
-    "eslint": "node ./node_modules/.bin/eslint app/ lib/"
+    "lint": "npm run --silent eslint --",
+    "lint:fix": "npm run --silent eslint:fix --",
+    "eslint": "eslint app/ lib/ public/resources/javascript/",
+    "eslint:fix": "eslint --fix app/ lib/ public/resources/javascript/"
   },
   "engines": {
     "node": "^10.0.0",
