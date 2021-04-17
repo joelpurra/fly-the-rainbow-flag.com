@@ -99,13 +99,37 @@ const configuration = require("configvention"),
 
     getAfterKey = (beforeKey) => beforeKey.replace(/^before\//, "after/"),
 
+    getS3Domain = () => {
+        // TODO: use a ready-made AWS S3 method instead.
+        return `${S3_BUCKET}.s3.${AWS_REGION}.amazonaws.com`;
+    },
+
+    getS3BaseUrl = () => {
+        // TODO: use a ready-made AWS S3 method instead.
+        const s3Domain = getS3Domain();
+
+        return `https://${s3Domain}`;
+    },
+
+    getS3Url = (pathname) => {
+        // TODO: use a ready-made AWS S3 method instead.
+        if (!startsWith(pathname, "/")) {
+            throw new Error("Key must start with a slash.");
+        }
+
+        const s3BaseUrl = getS3BaseUrl(),
+            s3Url = new URL(pathname, s3BaseUrl);
+
+        return s3Url.toString();
+    },
+
     getS3UrlFromKey = (key) => {
         // TODO: use a ready-made AWS S3 method instead.
         if (startsWith(key, "/")) {
             throw new Error("Key must not start with a slash.");
         }
 
-        return `https://${S3_BUCKET}.s3.${AWS_REGION}.amazonaws.com/${key}`;
+        return getS3Url(`/${key}`);
     },
 
     blitlineCreateAddOverlayJob = (beforeKey, afterKey, signedAfterUrl, clientFilename) => {
@@ -120,6 +144,7 @@ const configuration = require("configvention"),
         logger.trace("Creating add overlay job", beforeKey, afterKey, signedAfterUrl, clientFilename);
 
         const blitline = new Blitline(),
+            s3FlagOverlayUrl = getS3Url("/resources/image/overlay/rainbow-flag-superwide.svg"),
             job = {
                 "application_id": BLITLINE_APP_ID,
                 "src": getS3UrlFromKey(beforeKey),
@@ -135,7 +160,7 @@ const configuration = require("configvention"),
                         "params": {
                             // This file used to be hosted locally, but Blitline seemed to not be able to load it from the main domain.
                             // "src": "https://fly-the-rainbow-flag.com/resources/image/overlay/rainbow-flag-superwide.svg",
-                            "src": "https://fly-the-rainbow-flag.s3.eu-central-1.amazonaws.com/resources/image/overlay/rainbow-flag-superwide.svg",
+                            "src": s3FlagOverlayUrl,
                             "gravity": "CenterGravity",
                             "scale_to_match": true,
                             "src_percentage": 0.3,
@@ -206,7 +231,7 @@ const configuration = require("configvention"),
             });
     },
 
-    getS3BitlineUrl = (beforeKey, afterKey, clientFilename) => {
+    getS3BlitlineUrl = (beforeKey, afterKey, clientFilename) => {
         if (!startsWith(beforeKey, "before/")) {
             throw new Error("beforeKey must start with before/.");
         }
@@ -262,7 +287,7 @@ const configuration = require("configvention"),
                 // TODO: chain timed checks instead of starting all at once.
                 clearTimeouts();
 
-                logger.trace("Agressively waiting", "end", key, deltaTime, "ms");
+                logger.trace("Aggressively waiting", "end", key, deltaTime, "ms");
 
                 callback(err, metadata);
             }),
@@ -287,9 +312,9 @@ const configuration = require("configvention"),
                 }
             };
 
-        logger.trace("Agressively waiting", "start", key);
+        logger.trace("Aggressively waiting", "start", key);
 
-        // Agressive waiting!
+        // Aggressive waiting!
         // https://stackoverflow.com/questions/29255582/how-to-configure-interval-and-max-attempts-in-aws-s3-javascript-sdk
         s3.waitFor("objectExists", s3Params, filterOutExpectedErrorsCallback);
 
@@ -328,7 +353,7 @@ const configuration = require("configvention"),
             } else {
                 logger.trace("Object exists", beforeKey, afterKey, metadata);
 
-                getS3BitlineUrl(beforeKey, afterKey, clientFilename);
+                getS3BlitlineUrl(beforeKey, afterKey, clientFilename);
             }
         };
 
@@ -369,6 +394,19 @@ app.use(helmet.hsts({
     maxAge: 15724800000,
     includeSubDomains: true,
     force: configuration.get("enable-hsts") === true,
+}));
+app.use(helmet.contentSecurityPolicy({
+    directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        "connect-src": [
+            "'self'",
+            getS3BaseUrl(),
+        ],
+        "img-src": [
+            "'self'",
+            getS3BaseUrl(),
+        ],
+    },
 }));
 
 app.use(configuredHttpsRedirect());
