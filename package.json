@@ -30,10 +30,10 @@
     "start": "NODE_ENV=production node app/web.js",
     "debug": "NODE_ENV=development nodemon --inspect app/web.js | bunyan",
     "test": "npm run --silent lint && echo && echo 'No tests have been added!'",
-    "lint": "npm run --silent eslint --",
-    "lint:fix": "npm run --silent eslint:fix --",
-    "eslint": "eslint app/ lib/ public/resources/javascript/",
-    "eslint:fix": "eslint --fix app/ lib/ public/resources/javascript/"
+    "lint": "npm run --silent lint:eslint --",
+    "lint:fix": "npm run --silent lint:eslint:fix --",
+    "lint:eslint": "eslint app/ lib/ public/resources/javascript/",
+    "lint:eslint:fix": "eslint --fix app/ lib/ public/resources/javascript/"
   },
   "engines": {
     "node": "^10.0.0",
