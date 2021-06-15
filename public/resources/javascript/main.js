@@ -1,3 +1,7 @@
+const clearErrors = () => {
+	document.querySelector("#log").innerHTML = "";
+};
+
 const showError = (error, message) => {
 	// eslint-disable-next-line no-console
 	console.error(message, error);
@@ -127,6 +131,8 @@ const rainbowify = async () => {
 		return;
 	}
 
+	clearErrors();
+
 	document.querySelector("#after").className += " is-processing";
 	document.querySelector("#before").className += " is-processing";
 
@@ -143,11 +149,13 @@ const rainbowify = async () => {
 
 		await uploadFile(file, signedRequest);
 
+		document.querySelector("#before-link").href = beforeUrl;
 		document.querySelector("#before-image").src = beforeUrl;
 		document.querySelector("#before").className = document.querySelector("#before").className.replace(/is-processing/g, "");
 
 		await waitForAfterImage(afterUrl);
 
+		document.querySelector("#after-link").href = afterUrl;
 		document.querySelector("#after-image").src = afterUrl;
 		document.querySelector("#after").className = document.querySelector("#after").className.replace(/is-processing/g, "");
 	} catch (error) {
