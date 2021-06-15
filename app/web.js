@@ -24,9 +24,9 @@ const bunyanConfig = {
 		// },
 		//
 		{
-			type: "stream",
 			level: configuration.get("logging:level") || "trace",
 			stream: process.stdout,
+			type: "stream",
 		},
 		//
 		// {
@@ -52,7 +52,7 @@ const getHttpServerPort = () => {
 	const httpServerPortFromEnvironment = Number.parseInt(configuration.get("PORT"), 10);
 	const httpServerPortFromConfigurationFile = configuration.get("http-server-port");
 
-	if (isNaN(httpServerPortFromEnvironment) || httpServerPortFromEnvironment <= 0) {
+	if (Number.isNaN(httpServerPortFromEnvironment) || httpServerPortFromEnvironment <= 0) {
 		return httpServerPortFromConfigurationFile;
 	}
 
@@ -69,27 +69,29 @@ const express = require("express");
 const morgan = require("morgan");
 
 const expressLogger = morgan("combined", {
-	skip: (request, res) => res.statusCode < 400,
+	skip: (request, response) => response.statusCode < 400,
 });
 const helmet = require("helmet");
 const st = require("st");
 const path = require("path");
-const configuredHttpsRedirect = require("../lib/configuredHttpsRedirect.js");
+const configuredHttpsRedirect = require("./lib/configured-https-redirect.js");
 
 const resolvePath = (...args) => {
 	const parts = [
 		__dirname,
-	].concat(args);
+		...args,
+	];
 
-	return path.resolve.apply(path, parts);
+	return path.resolve(...parts);
 };
 
 const resolvePathFromProjectRoot = (...args) => {
 	const parts = [
 		relativePathToRootFromThisFile,
-	].concat(args);
+		...args,
+	];
 
-	return resolvePath.apply(null, parts);
+	return resolvePath(...parts);
 };
 
 const startsWith = (string, check) => string.slice(0, Math.max(0, check.length)) === check;
@@ -153,29 +155,12 @@ const blitlineCreateAddOverlayJob = (beforeKey, afterKey, signedAfterUrl, client
 	const blitline = new Blitline();
 	const s3FlagOverlayUrl = getS3Url("/resources/image/overlay/rainbow-flag-superwide.svg");
 	const job = {
+		/* eslint-disable camelcase */
 		application_id: BLITLINE_APP_ID,
-		src: getS3UrlFromKey(beforeKey),
-		wait_retry_delay: 5,
 		functions: [
 			{
-				name: "modulate",
-				params: {
-					saturation: 0.1,
-				},
-
 				functions: [
 					{
-						name: "dissolve",
-						params: {
-						// This file used to be hosted locally, but Blitline seemed to not be able to load it from the main domain.
-						// "src": "https://fly-the-rainbow-flag.com/resources/image/overlay/rainbow-flag-superwide.svg",
-							src: s3FlagOverlayUrl,
-							gravity: "CenterGravity",
-							scale_to_match: true,
-							src_percentage: 0.3,
-							dst_percentage: 0.7,
-						},
-
 						functions: [
 							{
 								name: "modulate",
@@ -187,21 +172,38 @@ const blitlineCreateAddOverlayJob = (beforeKey, afterKey, signedAfterUrl, client
 								save: {
 									image_identifier: afterKey,
 									s3_destination: {
-										signed_url: signedAfterUrl,
 										headers: {
 											// TODO: save original client file name.
 											//     "x-amz-meta-name": clientFilename
 											"x-amz-acl": "public-read",
 										},
+										signed_url: signedAfterUrl,
 									},
 								},
 							},
 						],
+						name: "dissolve",
+						params: {
+							// This file used to be hosted locally, but Blitline seemed to not be able to load it from the main domain.
+							// "src": "https://fly-the-rainbow-flag.com/resources/image/overlay/rainbow-flag-superwide.svg",
+							dst_percentage: 0.7,
+							gravity: "CenterGravity",
+							scale_to_match: true,
+							src: s3FlagOverlayUrl,
+							src_percentage: 0.3,
+						},
 					},
 				],
+				name: "modulate",
+				params: {
+					saturation: 0.1,
+				},
 			},
 		],
+		src: getS3UrlFromKey(beforeKey),
+		wait_retry_delay: 5,
 	};
+	/* eslint-enable camelcase */
 
 	blitline.addJob(job);
 
@@ -258,10 +260,10 @@ const getS3BlitlineUrl = (beforeKey, afterKey, clientFilename) => {
 
 	const s3 = new aws.S3();
 	const s3Parameters = {
-		Bucket: S3_BUCKET,
-		Key: afterKey,
-		Expires: 60,
 		ACL: "public-read",
+		Bucket: S3_BUCKET,
+		Expires: 60,
+		Key: afterKey,
 		// TODO: save original client file name.
 		// Metadata: metadata
 	};
@@ -408,12 +410,12 @@ const getExtensionFromInternetMediaType = (internetMediaType) => {
 };
 
 // Path to static resources like index.html, css etcetera
-const siteRootPath = resolvePathFromProjectRoot.apply(null, siteRootRelativePath.split("/"));
+const siteRootPath = resolvePathFromProjectRoot(...siteRootRelativePath.split("/"));
 
 const mount = st({
+	index: "index.html",
 	path: siteRootPath,
 	url: "/",
-	index: "index.html",
 });
 
 const aws = require("aws-sdk");
@@ -425,9 +427,9 @@ app.use(expressLogger);
 
 app.use(helmet());
 app.use(helmet.hsts({
-	maxAge: 15724800000,
-	includeSubDomains: true,
 	force: configuration.get("enable-hsts") === true,
+	includeSubDomains: true,
+	maxAge: 15724800000,
 }));
 app.use(helmet.contentSecurityPolicy({
 	directives: {
@@ -464,12 +466,12 @@ aws.config.update({
      * Upon request, return JSON containing the temporarily-signed S3 request and the
      * anticipated URL of the image.
      */
-	app.get("/sign-s3", (request, res) => {
+	app.get("/sign-s3", (request, response) => {
 		// TODO: better verification.
 		// TODO: check which types blitline can handle.
 		if (request.query.filetype !== "image/jpeg" && request.query.filetype !== "image/png") {
-			res.status(415); // 415 Unsupported Media Type
-			res.end();
+			response.status(415); // 415 Unsupported Media Type
+			response.end();
 			return;
 		}
 
@@ -487,11 +489,11 @@ aws.config.update({
 		//     name: clientFilename
 		// },
 		const s3Parameters = {
-			Bucket: S3_BUCKET,
-			Key: beforeKey,
-			Expires: 60,
-			ContentType: imageContentType,
 			ACL: "public-read",
+			Bucket: S3_BUCKET,
+			ContentType: imageContentType,
+			Expires: 60,
+			Key: beforeKey,
 			// TODO: save original client file name.
 			// Metadata: metadata
 		};
@@ -501,12 +503,12 @@ aws.config.update({
 				logger.error(error);
 			} else {
 				const result = {
-					signedRequest: signedBeforeUrl,
-					beforeUrl,
 					afterUrl,
+					beforeUrl,
+					signedRequest: signedBeforeUrl,
 				};
-				res.write(JSON.stringify(result));
-				res.end();
+				response.write(JSON.stringify(result));
+				response.end();
 
 				waitForClientS3Upload(beforeKey, afterKey, clientFilename);
 			}

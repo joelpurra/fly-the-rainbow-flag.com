@@ -1,21 +1,21 @@
 const configuration = require("configvention");
 
-const redirectRequestToHttps = (request, res) => {
+const redirectRequestToHttps = (request, response) => {
 	const secureRoot = configuration.get("https-url-root");
 	const secureUrl = new URL(request.originalUrl, secureRoot);
 
 	// From https://github.com/aredo/express-enforces-ssl
 	if (request.method === "GET") {
-		res.redirect(301, secureUrl);
+		response.redirect(301, secureUrl);
 	} else {
-		res.send(403, "Please use HTTPS when submitting data to this server.");
+		response.send(403, "Please use HTTPS when submitting data to this server.");
 	}
 };
 
 const configuredHttpsRedirect = () => {
-	const middleware = (request, res, next) => {
+	const middleware = (request, response, next) => {
 		if (request.headers["x-forwarded-proto"] !== "https" && configuration.get("redirect-to-https") === true) {
-			redirectRequestToHttps(request, res);
+			redirectRequestToHttps(request, response);
 		} else {
 			next();
 		}
