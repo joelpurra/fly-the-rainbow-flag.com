@@ -209,7 +209,7 @@ const waitForS3Object = async (key) => {
 // eslint-disable-next-line func-names
 module.exports = async function handleUpload(request, response) {
 	// TODO: use an express router.
-	if (!verifyRequest(request)) {
+	if (!verifyRequest(request, response)) {
 		return;
 	}
 
