@@ -1,15 +1,15 @@
-const configuration = require("configvention");
+const assert = require("assert");
 const aws = require("aws-sdk");
 const Blitline = require("simple_blitline_node");
 const bunyan = require("bunyan");
-const uuid = require("node-uuid");
-const express = require("express");
-const morgan = require("morgan");
-const helmet = require("helmet");
-const st = require("st");
-const path = require("path");
+const configuration = require("configvention");
 const configuredHttpsRedirect = require("./lib/configured-https-redirect.js");
-const assert = require("assert");
+const express = require("express");
+const helmet = require("helmet");
+const morgan = require("morgan");
+const path = require("path");
+const st = require("st");
+const uuid = require("node-uuid");
 
 const AWS_ACCESS_KEY = configuration.get("AWS_ACCESS_KEY");
 const AWS_SECRET_KEY = configuration.get("AWS_SECRET_KEY");
@@ -351,11 +351,12 @@ const expectedFiletypes = new Set([
 	"image/jpeg",
 	"image/png",
 ]);
+
 // Based on https://github.com/flyingsparx/NodeDirectUploader
 // Apache 2.0 license.
 // By https://github.com/flyingsparx/
 // https://devcenter.heroku.com/articles/s3-upload-node
-app.get("/sign-s3", async (request, response) => {
+const handleUpload = async (request, response) => {
 	// TODO: better verification.
 	// TODO: check which types blitline can handle.
 	const {
@@ -419,7 +420,9 @@ app.get("/sign-s3", async (request, response) => {
 	logger.trace("Client file upload done", afterKey);
 
 	logger.info("Success", beforeUrl, afterUrl);
-});
+};
+
+app.get("/sign-s3", handleUpload);
 
 app.use(mount);
 
