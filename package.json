@@ -20,14 +20,17 @@
     "eslint-config-joelpurra": "github:joelpurra/eslint-config-joelpurra#semver:^v5.1.2",
     "nodemon": "^2.0.7",
     "pre-commit": "^1.2.2",
+    "prettier": "^2.3.1",
     "xo": "^0.39.1"
   },
   "scripts": {
     "start": "NODE_ENV=production node app/web.js",
     "debug": "NODE_ENV=development nodemon --inspect app/web.js | bunyan",
     "test": "npm run --silent lint && echo && echo 'No tests have been added!'",
-    "lint": "npm run --silent lint:xo --",
-    "lint:fix": "npm run --silent lint:xo:fix --",
+    "lint": "npm run --silent lint:xo && npm run --silent lint:prettier",
+    "lint:fix": "npm run --silent lint:xo:fix && npm run --silent lint:prettier:fix",
+    "lint:prettier": "prettier --list-different \"./**/*.json\" \"./**/*.md\" || { echo \"Prettier needs to format the above files. Try 'npm run --silent lint:fix'.\" && exit 1; }",
+    "lint:prettier:fix": "prettier --write \"./**/*.json\" \"./**/*.md\"",
     "lint:xo": "xo",
     "lint:xo:fix": "xo --fix"
   },
