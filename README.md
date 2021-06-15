@@ -12,8 +12,6 @@
 
 Show your support by adding the rainbow flag to your photos! -- fly the rainbow flag!
 
-
-
 ## License
 
 <a href="https://fly-the-rainbow-flag.com/"><img src="./public/resources/image/icon-16x16.png" alt="The rainbow flag" /></a> Copyright (c) 2015, 2016, 2017, 2018, 2019, 2020, 2021, [Joel Purra](https://joelpurra.com/). All rights reserved.

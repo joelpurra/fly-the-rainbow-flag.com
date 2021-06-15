@@ -1,8 +1,5 @@
 {
-    "delay": 1,
-    "watch": [
-        "app/",
-        "lib/"
-    ],
-    "ext": "js"
+  "delay": 1,
+  "watch": ["app/", "lib/"],
+  "ext": "js"
 }
