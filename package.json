@@ -27,6 +27,7 @@
     "start": "NODE_ENV=production node app/web.js",
     "debug": "NODE_ENV=development nodemon --inspect app/web.js | bunyan",
     "test": "npm run --silent lint && echo && echo 'No tests have been added!'",
+    "placeholders:watermark": "( cd ./public/resources/image/placeholder && convert before-original.jpg -background transparent -fill 'rgba(0,0,0,0.3)' -font 'FreeSans' -pointsize 90 -gravity center -annotate 300x300+0+0 'SAMPLE' -strip before.jpg && convert after-original.jpg -background transparent -fill 'rgba(0,0,0,0.3)' -font 'FreeSans' -pointsize 90 -gravity center -annotate 300x300+0+0 'SAMPLE' -strip after.jpg; )",
     "lint": "npm run --silent lint:xo && npm run --silent lint:prettier",
     "lint:fix": "npm run --silent lint:xo:fix && npm run --silent lint:prettier:fix",
     "lint:prettier": "prettier --list-different \"./**/*.json\" \"./**/*.md\" || { echo \"Prettier needs to format the above files. Try 'npm run --silent lint:fix'.\" && exit 1; }",
