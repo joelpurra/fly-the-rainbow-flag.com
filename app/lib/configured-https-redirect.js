@@ -1,7 +1,9 @@
-const configuration = require("configvention");
+const {
+	redirectToHttps,
+	secureRoot,
+} = require("./configuration");
 
 const redirectRequestToHttps = (request, response) => {
-	const secureRoot = configuration.get("https-url-root");
 	const secureUrl = new URL(request.originalUrl, secureRoot);
 
 	// From https://github.com/aredo/express-enforces-ssl
@@ -14,7 +16,7 @@ const redirectRequestToHttps = (request, response) => {
 
 const configuredHttpsRedirect = () => {
 	const middleware = (request, response, next) => {
-		if (request.headers["x-forwarded-proto"] !== "https" && configuration.get("redirect-to-https") === true) {
+		if (request.headers["x-forwarded-proto"] !== "https" && redirectToHttps === true) {
 			redirectRequestToHttps(request, response);
 		} else {
 			next();
