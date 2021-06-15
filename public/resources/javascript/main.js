@@ -155,8 +155,8 @@ const rainbowify = async () => {
 	}
 };
 
-const main = () => {
+const startFileListener = () => {
 	document.querySelector("#file-input").addEventListener("change", rainbowify);
 };
 
-main();
+startFileListener();
