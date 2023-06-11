@@ -1,4 +1,3 @@
-
 const assert = require("node:assert");
 const aws = require("aws-sdk");
 const Blitline = require("simple_blitline_node");
@@ -194,13 +193,10 @@ const blitlineCreateAddOverlayJob = async (beforeKey, afterKey, signedAfterUrl) 
 const waitForS3Object = async (key) => {
 	const s3 = new aws.S3();
 	const s3Parameters = {
-
 		Bucket: configuration.S3_BUCKET,
 		Key: key,
-
 		delay: 1,
-		maxAttempts: 300
-		,
+		maxAttempts: 300,
 	};
 
 	await s3.waitFor("objectExists", s3Parameters);

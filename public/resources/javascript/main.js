@@ -31,9 +31,9 @@ const promiseTimeout = async (promise, limit) => {
 	]);
 };
 
+// TODO: use bluebird?
 const promiseSleep = async (sleep) =>
-	// TODO: use bluebird?
-	 new Promise((resolve, reject) => {
+	new Promise((resolve, reject) => {
 		setTimeout(
 			() => {
 				try {
@@ -45,6 +45,7 @@ const promiseSleep = async (sleep) =>
 			sleep,
 		);
 	});
+
 const waitForAfterImage = async (afterUrl) => {
 	// TODO: use library with retries and exponential backoff.
 	let countdown = 1000;
