@@ -17,11 +17,11 @@
     "st": "^2.0.0"
   },
   "devDependencies": {
-    "eslint-config-joelpurra": "github:joelpurra/eslint-config-joelpurra#semver:^v5.1.2",
+    "eslint-config-joelpurra": "github:joelpurra/eslint-config-joelpurra#semver:^v13.0.0",
     "nodemon": "^2.0.22",
     "pre-commit": "^1.2.2",
     "prettier": "^2.8.8",
-    "xo": "^0.39.1"
+    "xo": "^0.54.2"
   },
   "scripts": {
     "start": "NODE_ENV=production node app/web.js",
