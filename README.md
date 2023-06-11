@@ -3,6 +3,7 @@
 </p>
 
 <h1 align="center">
+	<img src="./public/resources/image/icon-64x64.png" alt="The rainbow flag" width="48" height="32" valign="middle" />
 	<a href="https://fly-the-rainbow-flag.com/">fly-the-rainbow-flag.com</a>
 </h1>
 
@@ -10,10 +11,10 @@
 - [Project page](https://joelpurra.com/projects/fly-the-rainbow-flag.com/)
 - [Source code](https://github.com/joelpurra/fly-the-rainbow-flag.com)
 
-Show your support by adding the rainbow flag to your photos! -- fly the rainbow flag!
+Show your support by adding the rainbow flag to your photos &mdash; fly the rainbow flag!
 
-## License
+---
 
-<a href="https://fly-the-rainbow-flag.com/"><img src="./public/resources/image/icon-16x16.png" alt="The rainbow flag" /></a> Copyright &copy; 2015, 2016, 2017, 2018, 2019, 2020, 2021, [Joel Purra](https://joelpurra.com/). All rights reserved.
+<a href="https://fly-the-rainbow-flag.com/"><img src="./public/resources/image/icon-64x64.png" alt="The rainbow flag" width="24" height="16" valign="middle" /></a> Copyright &copy; 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, [Joel Purra](https://joelpurra.com/). All rights reserved. Released under the [GNU Affero General Public License 3.0 (AGPL-3.0)](https://en.wikipedia.org/wiki/Affero_General_Public_License).
 
-When using the [fly-the-rainbow-flag.com source code](https://github.com/joelpurra/fly-the-rainbow-flag.com), comply to the [GNU Affero General Public License 3.0 (AGPL-3.0)](https://en.wikipedia.org/wiki/Affero_General_Public_License). Please see the LICENSE file for details.
+<a href="https://en.wikipedia.org/wiki/Rainbow_flag_(LGBT_movement)">The rainbow flag is public domain.</a> <a href="https://en.wikipedia.org/wiki/File:Rainbow_flag_and_blue_skies.jpg">Background photo by Ludovic Bertron, <nobr>CC-BY 2.0</nobr>.</a> Your photo belongs to you, and is only displayed to you. By uploading your photo to the service you assert that you have the right to do so, and give your consent to <nobr>fly-the-rainbow-flag.com</nobr> to temporarily store it, add the flag, and send it back to you.
