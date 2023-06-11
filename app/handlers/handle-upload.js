@@ -1,5 +1,5 @@
 
-const assert = require("assert");
+const assert = require("node:assert");
 const aws = require("aws-sdk");
 const Blitline = require("simple_blitline_node");
 const uuid = require("node-uuid");
@@ -34,12 +34,17 @@ const verifyRequest = (request, response) => {
 
 const getExtensionFromInternetMediaType = (internetMediaType) => {
 	switch (internetMediaType) {
-		case "image/jpeg":
+		case "image/jpeg": {
 			return ".jpg";
-		case "image/png":
+		}
+
+		case "image/png": {
 			return ".png";
-		default:
+		}
+
+		default: {
 			break;
+		}
 	}
 
 	throw new Error(`Unexpected internet media type: ${JSON.stringify(internetMediaType)}.`);
@@ -189,14 +194,13 @@ const blitlineCreateAddOverlayJob = async (beforeKey, afterKey, signedAfterUrl) 
 const waitForS3Object = async (key) => {
 	const s3 = new aws.S3();
 	const s3Parameters = {
-		...{
-			Bucket: configuration.S3_BUCKET,
-			Key: key,
-		},
-		...{
-			delay: 1,
-			maxAttempts: 300,
-		},
+
+		Bucket: configuration.S3_BUCKET,
+		Key: key,
+
+		delay: 1,
+		maxAttempts: 300
+		,
 	};
 
 	await s3.waitFor("objectExists", s3Parameters);

@@ -20,7 +20,7 @@ const promiseTimeout = async (promise, limit) => {
 			limit,
 		);
 	})
-		// eslint-disable-next-line promise/prefer-await-to-then
+
 		.then(() => {
 			throw new Error(`Timeout: ${limit}`);
 		});
@@ -31,9 +31,9 @@ const promiseTimeout = async (promise, limit) => {
 	]);
 };
 
-const promiseSleep = async (sleep) => {
+const promiseSleep = async (sleep) =>
 	// TODO: use bluebird?
-	return new Promise((resolve, reject) => {
+	 new Promise((resolve, reject) => {
 		setTimeout(
 			() => {
 				try {
@@ -45,8 +45,6 @@ const promiseSleep = async (sleep) => {
 			sleep,
 		);
 	});
-};
-
 const waitForAfterImage = async (afterUrl) => {
 	// TODO: use library with retries and exponential backoff.
 	let countdown = 1000;

@@ -38,7 +38,7 @@ const createExpressApp = (siteRootPath) => {
 	app.use(helmet.hsts({
 		force: configuration.enableHsts === true,
 		includeSubDomains: true,
-		maxAge: 15724800000,
+		maxAge: 15_724_800_000,
 	}));
 	app.use(helmet.contentSecurityPolicy({
 		directives: {

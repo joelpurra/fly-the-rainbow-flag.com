@@ -1,10 +1,8 @@
 const configuration = require("./configuration.js");
 
-const getS3Domain = () => {
+const getS3Domain = () =>
 	// TODO: use a ready-made AWS S3 method instead.
-	return `${configuration.S3_BUCKET}.s3.${configuration.AWS_REGION}.amazonaws.com`;
-};
-
+	 `${configuration.S3_BUCKET}.s3.${configuration.AWS_REGION}.amazonaws.com`;
 const getS3BaseUrl = () => {
 	// TODO: use a ready-made AWS S3 method instead.
 	const s3Domain = getS3Domain();

@@ -1,4 +1,4 @@
-const assert = require("assert");
+const assert = require("node:assert");
 const configvention = require("configvention");
 
 const AWS_ACCESS_KEY = configvention.get("AWS_ACCESS_KEY");
