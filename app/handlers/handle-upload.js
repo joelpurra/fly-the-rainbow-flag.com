@@ -1,14 +1,15 @@
-const assert = require("node:assert");
-const aws = require("aws-sdk");
-const Blitline = require("simple_blitline_node");
-const uuid = require("node-uuid");
+import assert from "node:assert";
 
-const {
+import aws from "aws-sdk";
+import uuid from "node-uuid";
+import Blitline from "simple_blitline_node";
+
+import configuration from "../lib/configuration.js";
+import {
 	getS3Url,
 	getS3UrlFromKey,
-} = require("../lib/get-s3-url.js");
-const logger = require("../lib/logger");
-const configuration = require("../lib/configuration");
+} from "../lib/get-s3-url.js";
+import logger from "../lib/logger.js";
 
 // TODO: check which types blitline can handle.
 const expectedFiletypes = new Set([
@@ -206,8 +207,7 @@ const waitForS3Object = async (key) => {
 // Apache 2.0 license.
 // By https://github.com/flyingsparx/
 // https://devcenter.heroku.com/articles/s3-upload-node
-// eslint-disable-next-line func-names
-module.exports = async function handleUpload(request, response) {
+export default async function handleUpload(request, response) {
 	// TODO: use an express router.
 	if (!verifyRequest(request, response)) {
 		return;
@@ -246,4 +246,4 @@ module.exports = async function handleUpload(request, response) {
 	logger.trace("Client file upload done", afterKey);
 
 	logger.info("Success", beforeUrl, afterUrl);
-};
+}

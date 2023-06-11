@@ -1,7 +1,9 @@
+import configuration from "./configuration.js";
+
 const {
 	redirectToHttps,
 	secureRoot,
-} = require("./configuration");
+} = configuration;
 
 const redirectRequestToHttps = (request, response) => {
 	const secureUrl = new URL(request.originalUrl, secureRoot);
@@ -26,4 +28,4 @@ const configuredHttpsRedirect = () => {
 	return middleware;
 };
 
-module.exports = configuredHttpsRedirect;
+export default configuredHttpsRedirect;

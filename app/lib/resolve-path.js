@@ -1,7 +1,14 @@
-const path = require("node:path");
+import path from "node:path";
+import {
+	fileURLToPath,
+} from "node:url";
+
+// HACK: using is __filename/__dirname is deprecated and should be replaced.
+//const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // TODO: use a library.
-const resolvePath = (...args) => {
+export const resolvePath = (...args) => {
 	const parts = [
 		__dirname,
 		...args,
@@ -12,7 +19,7 @@ const resolvePath = (...args) => {
 
 const relativePathToRootFromThisFile = "../..";
 
-const resolvePathFromProjectRoot = (...args) => {
+export const resolvePathFromProjectRoot = (...args) => {
 	const parts = [
 		relativePathToRootFromThisFile,
 		...args,
@@ -20,9 +27,3 @@ const resolvePathFromProjectRoot = (...args) => {
 
 	return resolvePath(...parts);
 };
-
-module.exports = {
-	resolvePath,
-	resolvePathFromProjectRoot,
-};
-

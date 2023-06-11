@@ -1,7 +1,8 @@
-const process = require("node:process");
+import process from "node:process";
 
-const bunyan = require("bunyan");
-const configuration = require("./configuration");
+import bunyan from "bunyan";
+
+import configuration from "./configuration.js";
 
 const bunyanConfig = {
 	name: "ftrf-web",
@@ -42,4 +43,4 @@ const bunyanConfig = {
 
 const logger = bunyan.createLogger(bunyanConfig);
 
-module.exports = logger;
+export default logger;

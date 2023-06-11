@@ -1,5 +1,6 @@
-const assert = require("node:assert");
-const configvention = require("configvention");
+import assert from "node:assert";
+
+import configvention from "configvention";
 
 const AWS_ACCESS_KEY = configvention.get("AWS_ACCESS_KEY");
 const AWS_SECRET_KEY = configvention.get("AWS_SECRET_KEY");
@@ -49,4 +50,4 @@ const configuration = {
 	siteRootRelativePath,
 };
 
-module.exports = configuration;
+export default configuration;

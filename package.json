@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "description": "ftrf-tastic!",
   "homepage": "https://fly-the-rainbow-flag.com/",
+  "type": "module",
   "main": "app/web.js",
   "dependencies": {
     "aws-sdk": "^2.1395.0",

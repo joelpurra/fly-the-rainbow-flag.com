@@ -1,19 +1,19 @@
-const aws = require("aws-sdk");
-const configuration = require("./lib/configuration");
-const express = require("express");
-const helmet = require("helmet");
-const morgan = require("morgan");
-const st = require("st");
+import aws from "aws-sdk";
+import express from "express";
+import helmet from "helmet";
+import morgan from "morgan";
+import st from "st";
 
-const {
+import handleUpload from "./handlers/handle-upload.js";
+import configuration from "./lib/configuration.js";
+import configuredHttpsRedirect from "./lib/configured-https-redirect.js";
+import {
 	getS3BaseUrl,
-} = require("./lib/get-s3-url.js");
-const configuredHttpsRedirect = require("./lib/configured-https-redirect.js");
-const handleUpload = require("./handlers/handle-upload.js");
-const logger = require("./lib/logger");
-const {
+} from "./lib/get-s3-url.js";
+import logger from "./lib/logger.js";
+import {
 	resolvePathFromProjectRoot,
-} = require("./lib/resolve-path");
+} from "./lib/resolve-path.js";
 
 const initializeAws = () => {
 	aws.config.update({
