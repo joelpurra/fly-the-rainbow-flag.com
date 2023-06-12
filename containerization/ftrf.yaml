@@ -1,0 +1,108 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ftrf-kubernetes
+data:
+  NODE_ENV: production
+  ftrf_http__server_ip: 0.0.0.0
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ftrf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ftrf
+  template:
+    metadata:
+      labels:
+        app: ftrf
+    spec:
+      containers:
+        - image: localhost/ftrf:latest
+          imagePullPolicy: Never
+          name: ftrf-nodejs
+          envFrom:
+          - secretRef:
+              name: ftrf
+              optional: false
+          - configMapRef:
+              name: ftrf-kubernetes
+              optional: false
+          - configMapRef:
+              name: ftrf-debug
+              optional: true
+          - configMapRef:
+              name: ftrf
+              optional: true
+          args:
+          - sh
+          - "-e"
+          - "-c"
+            # HACK: on non-clean server exit, delay a potential restart because podman does not seem to (yet?) support throttling container crashes.
+          - |-
+            node ./app/web.js \
+            || {
+              SERVER_EXIT_CODE="$?"
+
+              echo "Server crash detected (exit code ${SERVER_EXIT_CODE}). Throttling container restart by sleeping for a while, to reduce system load." >&2
+              sleep 1m
+
+              exit "$SERVER_EXIT_CODE"
+            }
+          ports:
+            - containerPort: 5000
+              hostPort: 5000
+              protocol: TCP
+              name: p-ftrf-http
+          # TODO: re-enable http probes when podman supports them without having to install curl inside the container.
+          # https://github.com/containers/podman/issues/18318
+          startupProbe:
+            # httpGet:
+            #   scheme: HTTP
+            #   path: /
+            #   port: 5000
+            tcpSocket:
+              host: 127.0.0.1
+              port: 5000
+            failureThreshold: 30
+            initialDelaySeconds: 0
+            periodSeconds: 1
+          readinessProbe:
+            # httpGet:
+            #   scheme: HTTP
+            #   path: /
+            #   port: 5000
+            tcpSocket:
+              host: 127.0.0.1
+              port: 5000
+            failureThreshold: 5
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            # httpGet:
+            #   scheme: HTTP
+            #   path: /
+            #   port: 5000
+            tcpSocket:
+              host: 127.0.0.1
+              port: 5000
+            failureThreshold: 5
+            initialDelaySeconds: 30
+            periodSeconds: 60
+          restartPolicy: Always
+          resources:
+            limits:
+              memory: 64Mi
+              cpu: 250m
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true

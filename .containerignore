@@ -1,0 +1,14 @@
+*
+
+!LICENSE
+!README.md
+
+!package.json
+!package-lock.json
+
+!app/
+app/web.js.config.json
+app/.xo-config.cjs
+
+!public/
+public/resources/javascript/.xo-config.cjs

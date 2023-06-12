@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ftrf-debug
+data:
+  DEBUG: configvention:*
+  ftrf_https__enable_hsts: false
+  ftrf_https__should_redirect: false
+  ftrf_logging__level: trace
