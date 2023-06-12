@@ -6,7 +6,7 @@ body {
 
 html,
 body {
-	font-family: "Open Sans", Helvetica, Verdana, sans-serif;
+	font-family: system-ui, sans-serif;
 	font-size: 1.3em;
 	line-height: 1.25;
 }
@@ -28,13 +28,8 @@ h3,
 h4,
 h5,
 h6 {
-	font-family: "Bangers", "Open Sans", Helvetica, Verdana, sans-serif;
 	margin: 0;
 	margin-top: 1em;
-}
-
-strong {
-	font-family: "Bangers", "Open Sans", Helvetica, Verdana, sans-serif;
 }
 
 header {
