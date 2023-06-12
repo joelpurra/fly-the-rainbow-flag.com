@@ -35,12 +35,13 @@ const createExpressApp = (siteRootPath) => {
 	app.use(expressLogger);
 
 	app.use(helmet());
-	app.use(helmet.hsts({
+	app.use(helmet.strictTransportSecurity({
 		force: configuration.enableHsts === true,
 		includeSubDomains: true,
 		maxAge: 15_724_800_000,
 	}));
 	app.use(helmet.contentSecurityPolicy({
+
 		directives: {
 			...helmet.contentSecurityPolicy.getDefaultDirectives(),
 			"connect-src": [

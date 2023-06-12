@@ -1,8 +1,10 @@
 import assert from "node:assert";
 
 import aws from "aws-sdk";
-import uuid from "node-uuid";
 import Blitline from "simple_blitline_node";
+import {
+	v4 as uuidv4,
+} from "uuid";
 
 import configuration from "../lib/configuration.js";
 import {
@@ -215,7 +217,7 @@ export default async function handleUpload(request, response) {
 
 	const imageContentType = request.query.filetype;
 	const extension = getExtensionFromInternetMediaType(imageContentType);
-	const generatedId = uuid.v4();
+	const generatedId = uuidv4();
 	const beforeKey = getBeforeKey(generatedId, extension);
 	const afterKey = getAfterKey(beforeKey);
 	const beforeUrl = getS3UrlFromKey(beforeKey);

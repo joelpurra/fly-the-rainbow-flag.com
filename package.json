@@ -7,15 +7,15 @@
   "type": "module",
   "main": "app/web.js",
   "dependencies": {
-    "aws-sdk": "^2.1395.0",
+    "aws-sdk": "^2.1398.0",
     "bunyan": "^1.8.15",
-    "configvention": "^2.0.0",
+    "configvention": "^3.0.1",
     "express": "^4.18.2",
-    "helmet": "^4.6.0",
+    "helmet": "^7.0.0",
     "morgan": "^1.10.0",
-    "node-uuid": "^1.4.8",
     "simple_blitline_node": "^3.0.1",
-    "st": "^2.0.0"
+    "st": "^3.0.0",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "eslint-config-joelpurra": "github:joelpurra/eslint-config-joelpurra#semver:^v13.0.0",
