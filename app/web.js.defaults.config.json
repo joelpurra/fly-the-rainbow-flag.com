@@ -1,18 +1,21 @@
 {
-  "name": "web",
-  "http-server-ip": "localhost",
-  "http-server-port": 5000,
-  "PORT": null,
-  "site-root": "./public/",
-  "enable-hsts": true,
-  "redirect-to-https": true,
-  "https-url-root": "https://fly-the-rainbow-flag.com",
-  "logging": {
+  "AWS_ACCESS_KEY_ID": null,
+  "AWS_REGION": "eu-central-1",
+  "AWS_SECRET_ACCESS_KEY": null,
+  "BLITLINE_APP_ID": null,
+  "ftrf_http": {
+    "server_ip": "localhost",
+    "server_port": 5000
+  },
+  "ftrf_https": {
+    "enable_hsts": true,
+    "root_url": "https://fly-the-rainbow-flag.com",
+    "should_redirect": true
+  },
+  "ftrf_logging": {
     "level": "warn"
   },
-  "AWS_ACCESS_KEY": null,
-  "AWS_REGION": "eu-central-1",
-  "AWS_SECRET_KEY": null,
-  "BLITLINE_APP_ID": null,
+  "ftrf_site_root": "./public/",
+  "PORT": null,
   "S3_BUCKET": "fly-the-rainbow-flag"
 }

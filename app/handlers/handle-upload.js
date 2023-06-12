@@ -6,7 +6,10 @@ import {
 	v4 as uuidv4,
 } from "uuid";
 
-import configuration from "../lib/configuration.js";
+import {
+	BLITLINE_APP_ID,
+	S3_BUCKET,
+} from "../lib/configuration.js";
 import {
 	getS3Url,
 	getS3UrlFromKey,
@@ -74,7 +77,7 @@ const getSignedS3Url = async (key, imageContentType) => {
 	const s3 = new aws.S3();
 	const s3Parameters = {
 		ACL: "public-read",
-		Bucket: configuration.S3_BUCKET,
+		Bucket: S3_BUCKET,
 		ContentType: imageContentType || undefined,
 		Expires: 60,
 		Key: key,
@@ -102,7 +105,7 @@ const blitlineCreateAddOverlayJob = async (beforeKey, afterKey, signedAfterUrl) 
 	const s3FlagOverlayUrl = getS3Url("/resources/image/overlay/rainbow-flag-superwide.svg");
 	const job = {
 		/* eslint-disable camelcase */
-		application_id: configuration.BLITLINE_APP_ID,
+		application_id: BLITLINE_APP_ID,
 		functions: [
 			{
 				functions: [
@@ -196,7 +199,7 @@ const blitlineCreateAddOverlayJob = async (beforeKey, afterKey, signedAfterUrl) 
 const waitForS3Object = async (key) => {
 	const s3 = new aws.S3();
 	const s3Parameters = {
-		Bucket: configuration.S3_BUCKET,
+		Bucket: S3_BUCKET,
 		Key: key,
 		delay: 1,
 		maxAttempts: 300,

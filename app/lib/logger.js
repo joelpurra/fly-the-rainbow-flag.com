@@ -2,14 +2,14 @@ import process from "node:process";
 
 import bunyan from "bunyan";
 
-import configuration from "./configuration.js";
+import {
+	logging as loggingConfiguration,
+} from "./configuration.js";
 
 const bunyanConfig = {
 	name: "ftrf-web",
 
-	// TODO: make level logging an option.
-	// level: "error",
-	// TODO: make src logging an option, disabled in production.
+	// NOTE: src logging is disabled in production.
 	// src: true,
 	// TODO: streams should be a part of per-app configuration.
 	streams: [
@@ -22,7 +22,7 @@ const bunyanConfig = {
 		// },
 		//
 		{
-			level: configuration.loggingLevel,
+			level: loggingConfiguration.level,
 			stream: process.stdout,
 			type: "stream",
 		},

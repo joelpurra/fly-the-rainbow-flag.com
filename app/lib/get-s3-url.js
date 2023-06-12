@@ -1,7 +1,10 @@
-import configuration from "./configuration.js";
+import {
+	AWS_REGION,
+	S3_BUCKET,
+} from "./configuration.js";
 
 // TODO: use a ready-made AWS S3 method instead.
-export const getS3Domain = () => `${configuration.S3_BUCKET}.s3.${configuration.AWS_REGION}.amazonaws.com`;
+export const getS3Domain = () => `${S3_BUCKET}.s3.${AWS_REGION}.amazonaws.com`;
 
 export const getS3BaseUrl = () => {
 	// TODO: use a ready-made AWS S3 method instead.

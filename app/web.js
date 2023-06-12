@@ -5,7 +5,15 @@ import morgan from "morgan";
 import st from "st";
 
 import handleUpload from "./handlers/handle-upload.js";
-import configuration from "./lib/configuration.js";
+import {
+	AWS_ACCESS_KEY,
+	AWS_REGION,
+	AWS_SECRET_KEY,
+	http as httpConfiguration,
+	https as httpsConfiguration,
+	S3_BUCKET,
+	siteRootRelativePath,
+} from "./lib/configuration.js";
 import configuredHttpsRedirect from "./lib/configured-https-redirect.js";
 import {
 	getS3BaseUrl,
@@ -17,11 +25,11 @@ import {
 
 const initializeAws = () => {
 	aws.config.update({
-		accessKeyId: configuration.AWS_ACCESS_KEY,
-		secretAccessKey: configuration.AWS_SECRET_KEY,
+		accessKeyId: AWS_ACCESS_KEY,
+		secretAccessKey: AWS_SECRET_KEY,
 	});
 	aws.config.update({
-		region: configuration.AWS_REGION,
+		region: AWS_REGION,
 		signatureVersion: "v4",
 	});
 };
@@ -36,7 +44,7 @@ const createExpressApp = (siteRootPath) => {
 
 	app.use(helmet());
 	app.use(helmet.strictTransportSecurity({
-		force: configuration.enableHsts === true,
+		force: httpsConfiguration.enableHsts === true,
 		includeSubDomains: true,
 		maxAge: 15_724_800_000,
 	}));
@@ -73,15 +81,15 @@ const startWebServer = () => {
 	initializeAws();
 
 	// Path to static resources like index.html, css etcetera
-	const siteRootPath = resolvePathFromProjectRoot(...configuration.siteRootRelativePath.split("/"));
+	const siteRootPath = resolvePathFromProjectRoot(...siteRootRelativePath.split("/"));
 
 	const app = createExpressApp(siteRootPath);
 
-	app.listen(configuration.httpServerPort, configuration.httpServerIp, () => {
-		logger.info("Listening on port", configuration.httpServerPort);
-		logger.info("Bound to interface with ip", configuration.httpServerIp);
+	app.listen(httpConfiguration.serverPort, httpConfiguration.serverIp, () => {
+		logger.info("Listening on port", httpConfiguration.serverPort);
+		logger.info("Bound to interface with ip", httpConfiguration.serverIp);
 		logger.info("Serving site root from folder", siteRootPath);
-		logger.info("Using S3_BUCKET", configuration.S3_BUCKET);
+		logger.info("Using S3_BUCKET", S3_BUCKET);
 	});
 };
 
