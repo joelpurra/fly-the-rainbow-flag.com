@@ -1,5 +1,5 @@
 <p align="center">
-	<a href="https://fly-the-rainbow-flag.com/"><img src="./public/resources/image/background/1024px-Rainbow_flag_and_blue_skies.jpg" alt="The rainbow flag" /></a>
+	<a href="https://fly-the-rainbow-flag.com/"><img src="./public/resources/image/background/3008px-Rainbow_flag_and_blue_skies.jpg" alt="The rainbow flag" /></a>
 </p>
 
 <h1 align="center">
