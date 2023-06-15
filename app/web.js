@@ -7,12 +7,12 @@ import handleUpload from "./handlers/handle-upload.js";
 import {
 	http as httpConfiguration,
 	https as httpsConfiguration,
-	S3_BUCKET,
 	siteRootRelativePath,
 } from "./lib/configuration.js";
 import configuredHttpsRedirect from "./lib/configured-https-redirect.js";
 import {
 	getS3BaseUrl,
+	getS3Domain,
 } from "./lib/get-s3-url.js";
 import logger from "./lib/logger.js";
 import {
@@ -64,14 +64,14 @@ const createExpressApp = (siteRootPath) => {
 const startWebServer = () => {
 	// Path to static resources like index.html, css etcetera
 	const siteRootPath = resolvePathFromProjectRoot(...siteRootRelativePath.split("/"));
-
 	const app = createExpressApp(siteRootPath);
+	const s3Domain = getS3Domain();
 
 	app.listen(httpConfiguration.serverPort, httpConfiguration.serverIp, () => {
-		logger.info("Listening on port", httpConfiguration.serverPort);
-		logger.info("Bound to interface with ip", httpConfiguration.serverIp);
-		logger.info("Serving site root from folder", siteRootPath);
-		logger.info("Using S3_BUCKET", S3_BUCKET);
+		logger.info("Listening on port:", httpConfiguration.serverPort);
+		logger.info("Bound to interface with ip:", httpConfiguration.serverIp);
+		logger.info("Serving site root from folder:", siteRootPath);
+		logger.info("Using S3 bucket/region:", s3Domain);
 	});
 };
 
