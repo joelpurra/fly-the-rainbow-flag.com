@@ -7,6 +7,9 @@ import {
 } from "uuid";
 
 import {
+	initializeAwsIfNeeded,
+} from "../lib/aws.js";
+import {
 	BLITLINE_APP_ID,
 	S3_BUCKET,
 } from "../lib/configuration.js";
@@ -68,6 +71,8 @@ const getBeforeKey = (generatedId, extension) => `before/${shortDateString()}/${
 const getAfterKey = (beforeKey) => beforeKey.replace(/^before\//, "after/");
 
 const getSignedS3Url = async (key, imageContentType) => {
+	initializeAwsIfNeeded();
+
 	// const clientFilename = (query.filename || "");
 	// TODO: save original client file name.
 	// const metadata = {

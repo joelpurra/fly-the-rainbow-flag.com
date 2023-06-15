@@ -1,4 +1,3 @@
-import aws from "aws-sdk";
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -6,9 +5,6 @@ import st from "st";
 
 import handleUpload from "./handlers/handle-upload.js";
 import {
-	AWS_ACCESS_KEY,
-	AWS_REGION,
-	AWS_SECRET_KEY,
 	http as httpConfiguration,
 	https as httpsConfiguration,
 	S3_BUCKET,
@@ -22,17 +18,6 @@ import logger from "./lib/logger.js";
 import {
 	resolvePathFromProjectRoot,
 } from "./lib/resolve-path.js";
-
-const initializeAws = () => {
-	aws.config.update({
-		accessKeyId: AWS_ACCESS_KEY,
-		secretAccessKey: AWS_SECRET_KEY,
-	});
-	aws.config.update({
-		region: AWS_REGION,
-		signatureVersion: "v4",
-	});
-};
 
 const createExpressApp = (siteRootPath) => {
 	const app = express();
@@ -49,7 +34,6 @@ const createExpressApp = (siteRootPath) => {
 		maxAge: 15_724_800_000,
 	}));
 	app.use(helmet.contentSecurityPolicy({
-
 		directives: {
 			...helmet.contentSecurityPolicy.getDefaultDirectives(),
 			"connect-src": [
@@ -78,8 +62,6 @@ const createExpressApp = (siteRootPath) => {
 };
 
 const startWebServer = () => {
-	initializeAws();
-
 	// Path to static resources like index.html, css etcetera
 	const siteRootPath = resolvePathFromProjectRoot(...siteRootRelativePath.split("/"));
 
